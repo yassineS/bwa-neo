@@ -14,14 +14,44 @@ if(BWA_NEO_ENABLE_ASAN)
 endif()
 
 set(BWA_NEO_LIB_SRCS
-  utils.c kthread.c kstring.c ksw.c bwt.c bntseq.c bwa.c bwamem.c bwamem_pair.c bwamem_extra.c
-  malloc_wrap.c QSufSort.c bwt_gen.c rope.c rle.c is.c bwtindex.c
+  src/core/utils.c
+  src/core/kthread.c
+  src/core/kstring.c
+  src/core/ksw.c
+  src/core/malloc_wrap.c
+  src/core/QSufSort.c
+  src/core/rope.c
+  src/core/rle.c
+  src/core/is.c
+  src/index/bwt.c
+  src/index/bntseq.c
+  src/index/bwa.c
+  src/index/bwt_gen.c
+  src/index/bwtindex.c
+  src/mem/bwamem.c
+  src/mem/bwamem_pair.c
+  src/mem/bwamem_extra.c
 )
 
 set(BWA_NEO_EXE_SRCS
-  bwashm.c bwase.c bwaseqio.c bwtgap.c bwtaln.c bamlite.c bwape.c kopen.c pemerge.c maxk.c
-  bwtsw2_core.c bwtsw2_main.c bwtsw2_aux.c bwt_lite.c bwtsw2_chain.c fastmap.c bwtsw2_pair.c
-  main.c
+  src/backtrack/bwashm.c
+  src/backtrack/bwase.c
+  src/backtrack/bwaseqio.c
+  src/backtrack/bwtgap.c
+  src/backtrack/bwtaln.c
+  src/backtrack/bwape.c
+  src/backtrack/bwtsw2_core.c
+  src/backtrack/bwtsw2_main.c
+  src/backtrack/bwtsw2_aux.c
+  src/backtrack/bwtsw2_chain.c
+  src/backtrack/bwtsw2_pair.c
+  src/index/bwt_lite.c
+  src/mem/fastmap.c
+  src/core/bamlite.c
+  src/core/kopen.c
+  src/core/pemerge.c
+  src/core/maxk.c
+  src/cli/main.c
 )
 
 add_compile_definitions(HAVE_PTHREAD USE_MALLOC_WRAPPERS)
@@ -34,10 +64,12 @@ endif()
 
 add_library(bwa_core STATIC ${BWA_NEO_LIB_SRCS})
 target_compile_options(bwa_core PRIVATE -Wall -Wno-unused-function -O3)
+target_include_directories(bwa_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/bwa)
 target_link_libraries(bwa_core PUBLIC m z pthread ${BWA_NEO_EXTRA_LIBS})
 
 add_executable(bwa ${BWA_NEO_EXE_SRCS})
 target_compile_options(bwa PRIVATE -Wall -Wno-unused-function -O3)
+target_include_directories(bwa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/bwa)
 target_link_libraries(bwa PRIVATE bwa_core m z pthread ${BWA_NEO_EXTRA_LIBS})
 
 include(GNUInstallDirs)

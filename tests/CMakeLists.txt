@@ -17,3 +17,6 @@ set_tests_properties(smoke_align PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR
 
 add_test(NAME golden_sam COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/golden_sam.sh $<TARGET_FILE:bwa>)
 set_tests_properties(golden_sam PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME golden_sampe COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/golden_sampe.sh $<TARGET_FILE:bwa>)
+set_tests_properties(golden_sampe PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

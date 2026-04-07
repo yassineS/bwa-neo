@@ -1,5 +1,7 @@
 *.[oa]
 bwa
+!include/bwa/
+!include/bwa/**
 test
 test64
 .*.swp

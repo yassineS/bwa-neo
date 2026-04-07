@@ -30,6 +30,9 @@ jobs:
       - name: Golden SAM regression
         run: chmod +x tests/golden_sam.sh && tests/golden_sam.sh ./bwa
 
+      - name: Golden SAMPE regression
+        run: chmod +x tests/golden_sampe.sh && tests/golden_sampe.sh ./bwa
+
   build-cmake:
     runs-on: ubuntu-latest
     strategy:
