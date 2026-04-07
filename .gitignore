@@ -1,0 +1,9 @@
+*.[oa]
+bwa
+test
+test64
+.*.swp
+Makefile.bak
+bwamem-lite
+/build/
+/third_party/bwa-mem2/

@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+jobs:
+  build-make:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update -q && sudo apt-get install -q -y zlib1g-dev
+
+      - name: Compile with Make (${{ matrix.compiler }})
+        run: make CC=${{ matrix.compiler }}
+
+      - name: Smoke test (bash)
+        run: chmod +x tests/smoke_align.sh && tests/smoke_align.sh ./bwa
+
+  build-cmake:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update -q && sudo apt-get install -q -y zlib1g-dev cmake ninja-build
+
+      - name: Configure and build (CMake)
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then export CXX=g++; else export CXX=clang++; fi
+          cmake -S . -B build -G Ninja -DCMAKE_C_COMPILER=${{ matrix.compiler }} -DCMAKE_CXX_COMPILER="$CXX" -DBUILD_TESTING=ON
+          cmake --build build
+
+      - name: CTest
+        run: ctest --test-dir build --output-on-failure
+
+  build-asan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update -q && sudo apt-get install -q -y zlib1g-dev cmake ninja-build
+
+      - name: Build with ASan
+        run: |
+          cmake -S . -B build-asan -G Ninja -DBWA_NEO_ENABLE_ASAN=ON -DBUILD_TESTING=OFF
+          cmake --build build-asan
+
+  build-aarch64:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile with ${{ matrix.compiler }} (aarch64)
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${PWD}:/bwa"
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y make ${{ matrix.compiler }} zlib1g-dev
+          run: |
+            cd /bwa
+            make CC=${{ matrix.compiler }}
