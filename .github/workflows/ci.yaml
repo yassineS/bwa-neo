@@ -69,8 +69,9 @@ jobs:
           cmake -S . -B build-asan -G Ninja -DBWA_NEO_ENABLE_ASAN=ON -DBUILD_TESTING=OFF
           cmake --build build-asan
 
+  # Native ARM64 (avoid QEMU user-mode emulation: clang was segfaulting on large .c files).
   build-aarch64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
         compiler: [gcc, clang]
@@ -79,17 +80,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Compile with ${{ matrix.compiler }} (aarch64)
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: aarch64
-          distro: ubuntu20.04
-          githubToken: ${{ github.token }}
-          dockerRunArgs: |
-            --volume "${PWD}:/bwa"
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y make ${{ matrix.compiler }} zlib1g-dev
-          run: |
-            cd /bwa
-            make CC=${{ matrix.compiler }}
+      - name: Install dependencies
+        run: sudo apt-get update -q && sudo apt-get install -q -y zlib1g-dev
+
+      - name: Compile with Make (${{ matrix.compiler }})
+        run: make CC=${{ matrix.compiler }}
