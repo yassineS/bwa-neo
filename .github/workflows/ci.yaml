@@ -69,7 +69,7 @@ jobs:
           cmake -S . -B build-asan -G Ninja -DBWA_NEO_ENABLE_ASAN=ON -DBUILD_TESTING=OFF
           cmake --build build-asan
 
-  # Native ARM64 (avoid QEMU user-mode emulation: clang was segfaulting on large .c files).
+  # Native ARM64 runners (no QEMU); matches x86 coverage with gcc and clang.
   build-aarch64:
     runs-on: ubuntu-24.04-arm
     strategy:
