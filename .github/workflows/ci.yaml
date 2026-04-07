@@ -69,30 +69,19 @@ jobs:
           cmake -S . -B build-asan -G Ninja -DBWA_NEO_ENABLE_ASAN=ON -DBUILD_TESTING=OFF
           cmake --build build-asan
 
+  # Native ARM64 runners (no QEMU); matches x86 coverage with gcc and clang.
   build-aarch64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
-        # clang intermittently segfaults compiling large .c files under QEMU arm64
-        # (run-on-arch); gcc is stable. x86_64 still builds with both compilers above.
-        compiler: [gcc]
+        compiler: [gcc, clang]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Compile with ${{ matrix.compiler }} (aarch64)
-        # v3.x fixes sporadic QEMU segfaults seen with v2 + clang; omit githubToken so
-        # forks/orgs without GHCR package:create do not fail on cache push ("denied").
-        uses: uraimo/run-on-arch-action@v3
-        with:
-          arch: aarch64
-          distro: ubuntu20.04
-          dockerRunArgs: |
-            --volume "${PWD}:/bwa"
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y make ${{ matrix.compiler }} zlib1g-dev
-          run: |
-            cd /bwa
-            make CC=${{ matrix.compiler }}
+      - name: Install dependencies
+        run: sudo apt-get update -q && sudo apt-get install -q -y zlib1g-dev
+
+      - name: Compile with Make (${{ matrix.compiler }})
+        run: make CC=${{ matrix.compiler }}
