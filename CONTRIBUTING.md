@@ -4,7 +4,7 @@ Read **`requirements.md`**, **`design.md`**, and **`tasks.md`** before large cha
 
 **Repository location:** clone and work only under **`~/Code/bwa-neo`** (or one path of your choice)—do not mirror the project in `~/bwa-neo` or other duplicates.
 
-**Git workflow:** see **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)** for branches (`main`, `feat/*`, `fix/*`), commits, and PR flow.
+**Git workflow:** see **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)** for branches (`main`, `feat/*`, `fix/*`), commits, PR flow, and **GitHub CLI (`gh`)** commands (`gh repo create`, `gh pr create`, etc.).
 
 ## Build
 

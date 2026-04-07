@@ -1,5 +1,7 @@
 # bwa-neo
 
+[![CI](https://github.com/yassineS/bwa-neo/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/yassineS/bwa-neo/actions/workflows/ci.yaml)
+
 **Use a single clone:** `~/Code/bwa-neo` is the canonical working tree for this fork. See `docs/DEVELOPMENT.md` for Git branching and commits.
 
 This tree is the **bwa-neo** fork layout (see `requirements.md`, `design.md`, `tasks.md`).

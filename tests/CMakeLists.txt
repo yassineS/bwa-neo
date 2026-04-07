@@ -14,3 +14,6 @@ add_test(NAME unit COMMAND bwa_neo_unit)
 
 add_test(NAME smoke_align COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/smoke_align.sh $<TARGET_FILE:bwa>)
 set_tests_properties(smoke_align PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME golden_sam COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/golden_sam.sh $<TARGET_FILE:bwa>)
+set_tests_properties(golden_sam PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

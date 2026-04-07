@@ -27,6 +27,9 @@ jobs:
       - name: Smoke test (bash)
         run: chmod +x tests/smoke_align.sh && tests/smoke_align.sh ./bwa
 
+      - name: Golden SAM regression
+        run: chmod +x tests/golden_sam.sh && tests/golden_sam.sh ./bwa
+
   build-cmake:
     runs-on: ubuntu-latest
     strategy:

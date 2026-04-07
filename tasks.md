@@ -7,14 +7,14 @@
 - [x] Add CMake build; keep Makefile
 - [x] Add `CONTRIBUTING.md`, `SECURITY.md`, `MAINTAINERS.md`
 - [x] `scripts/bootstrap-git.sh` (+ `init-git.sh` wrapper) and **`docs/DEVELOPMENT.md`** (branching, commits)
-- [ ] Run `./scripts/bootstrap-git.sh` locally, commit, push to your GitHub org (`main` as default branch)
+- [x] Push to GitHub (`main`); see `docs/DEVELOPMENT.md` (`gh`, `gh auth setup-git`)
 
 ## Testing and CI
 
 - [x] Smoke test script (`tests/smoke_align.sh`)
 - [x] CMake + CTest wiring for smoke / unit placeholder
 - [x] GitHub Actions: extend with CMake + smoke + optional ASan
-- [ ] Expand golden SAM tests on tiny references
+- [x] Golden SAM regression (`tests/golden_sam.sh`, `tests/fixtures/tiny/`) — first 11 fields + `samse -t` parity
 
 ## Upstream triage
 
@@ -43,6 +43,6 @@
 ## Milestones (from plan)
 
 - [x] **0.1**: Docs + CMake + smoke + CI updates + samse `-t`
-- [ ] **0.2**: Upstream triage batch + more tests
+- [ ] **0.2**: Upstream triage batch + more tests (golden coverage expanded)
 - [ ] **1.0**: Stable parallel paths + full test suite
 - [ ] **2.0**: `mem` powered by merged bwa-mem2 only

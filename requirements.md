@@ -35,6 +35,7 @@ A maintained fork of BWA that keeps the **`aln` / `samse` / `sampe`** pipeline r
 | ID | Story | Acceptance criteria |
 |----|--------|---------------------|
 | R4.1 | As a developer, I run unit/integration tests locally and in CI. | CTest / smoke script runs on push; optional ASan build. |
+| R4.2 | As a developer, a tiny **golden SAM** check catches regressions in `aln`/`samse`. | `tests/golden_sam.sh` matches first 11 fields of a mapped read; `samse -t` matches single-threaded. |
 
 ### R5 — Upstream triage
 
