@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # End-to-end smoke: index tiny ref, aln, samse. Uses bash only + bwa binary.
 set -euo pipefail
-BWA="${1:?usage: smoke_align.sh /path/to/bwa}"
+BWA_INPUT="${1:?usage: smoke_align.sh /path/to/bwa}"
+BWA="$(cd "$(dirname "$BWA_INPUT")" && pwd)/$(basename "$BWA_INPUT")"
 WORKDIR=$(mktemp -d)
 trap 'rm -rf "$WORKDIR"' EXIT
 cd "$WORKDIR"

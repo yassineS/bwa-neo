@@ -1,6 +1,6 @@
 # bwa-neo — design
 
-**Single working copy:** `~/Code/bwa-neo` as the opened workspace root. Agent handoff: **`AGENTS.md`**. Git practices: **`docs/DEVELOPMENT.md`**.
+**Single working copy:** `~/Code/bwa-neo` as the opened workspace root. Agent handoff: `**AGENTS.md`**. Git practices: `**docs/DEVELOPMENT.md**`.
 
 ## Architecture (target)
 
@@ -33,15 +33,19 @@ flowchart TB
   refbias --> aln
 ```
 
+
+
 ## Components
 
-| Component | Role | Notes |
-|-----------|------|--------|
-| `libbwa` (static) | FM-index, BWT, `bwamem`, I/O | Built from upstream `.c` list (see `Makefile` / `CMakeLists.txt`). |
-| `bwa` executable | CLI entrypoint | `main.c` dispatches subcommands. |
-| **Parallel `aln`** | `bwa aln -t` | Already present in upstream (`bwtaln.c`); worker pool over reads. |
-| **Parallel `samse` (pac_pos)** | `bwa samse -t` | bwa-neo: pthreads split over sequences in `bwa_cal_pac_pos` (shared read-only `bwt_t`). Default `-t 1`. |
-| **bwa-mem2** | `mem` algorithm | Fetched into `third_party/bwa-mem2`; built with upstream Makefile or CMake `ExternalProject`. Full source merge of mem2 into a single `bwa` binary is phased (see `tasks.md`). |
+
+| Component                      | Role                         | Notes                                                                                                                                                                          |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `libbwa` (static)              | FM-index, BWT, `bwamem`, I/O | Built from upstream `.c` list (see `Makefile` / `CMakeLists.txt`).                                                                                                             |
+| `bwa` executable               | CLI entrypoint               | `main.c` dispatches subcommands.                                                                                                                                               |
+| **Parallel `aln`**             | `bwa aln -t`                 | Already present in upstream (`bwtaln.c`); worker pool over reads.                                                                                                              |
+| **Parallel `samse` (pac_pos)** | `bwa samse -t`               | bwa-neo: pthreads split over sequences in `bwa_cal_pac_pos` (shared read-only `bwt_t`). Default `-t 1`.                                                                        |
+| **bwa-mem2**                   | `mem` algorithm              | Fetched into `third_party/bwa-mem2`; built with upstream Makefile or CMake `ExternalProject`. Full source merge of mem2 into a single `bwa` binary is phased (see `tasks.md`). |
+
 
 ## Data models (alignment)
 
@@ -63,3 +67,4 @@ flowchart TB
 
 - Upstream BWA: see `COPYING` (MIT-style).
 - bwa-mem2: MIT — see `third_party/bwa-mem2/LICENSE` after fetch.
+

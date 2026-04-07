@@ -2,7 +2,8 @@
 # Regression: mapped read first 11 SAM fields match committed expectation (seq + qual + core fields).
 # Optional tags (NM, MD, …) are ignored so minor BWA tag changes do not break the test.
 set -euo pipefail
-BWA="${1:?usage: golden_sam.sh /path/to/bwa}"
+BWA_INPUT="${1:?usage: golden_sam.sh /path/to/bwa}"
+BWA="$(cd "$(dirname "$BWA_INPUT")" && pwd)/$(basename "$BWA_INPUT")"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 FIX="${ROOT}/fixtures/tiny"
 WORKDIR=$(mktemp -d)
