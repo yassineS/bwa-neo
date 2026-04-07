@@ -41,13 +41,71 @@ cmake --build build && ctest --test-dir build
 git add -p
 git commit -m "feat: describe change"
 git push -u origin feat/my-change
-# open PR into main
+gh pr create --fill   # optional: open a PR from the CLI
 ```
+
+## GitHub CLI (`gh`)
+
+This project assumes **[GitHub CLI](https://cli.github.com/)** is installed and authenticated (`gh auth status`). Prefer `gh` over hand-pasted URLs so you avoid shell mistakes with angle brackets or wrong remotes.
+
+**Once per machine**, wire Git’s HTTPS access to the same account as `gh` (avoids `remote: Repository not found` when `gh` works but `git push` does not):
+
+```bash
+gh auth setup-git
+```
+
+### First push to GitHub (after local commit on `main`)
+
+From `~/Code/bwa-neo`, create the remote repo and push in one step:
+
+```bash
+gh auth setup-git   # if you have not already
+gh repo create bwa-neo --public --source=. --remote=origin --push
+```
+
+Use `--private` instead of `--public` if you want a private repo. Omit the name `bwa-neo` to default to the current directory name.
+
+### Push failed but the repo was created (`Repository not found`)
+
+If `gh repo create … --push` created the repo on GitHub but **`git push` failed**, the remote is usually correct; fix credentials and push again:
+
+```bash
+gh auth setup-git
+git remote -v
+git push -u origin main
+```
+
+Do **not** run `gh repo create` again if the repository already exists—GitHub will error or require a new name. Use `gh repo view` to confirm the repo is there.
+
+If `origin` already exists but is wrong:
+
+```bash
+git remote remove origin
+gh repo create bwa-neo --public --source=. --remote=origin --push
+```
+
+If the repo **already exists** on GitHub and you only need to attach the remote:
+
+```bash
+gh repo set-default YOUR_LOGIN/bwa-neo   # optional
+git remote add origin https://github.com/YOUR_LOGIN/bwa-neo.git
+git push -u origin main
+```
+
+(or use `gh repo sync` / clone patterns from `gh repo --help` for your case.)
+
+### Useful commands
+
+| Command | Purpose |
+|---------|---------|
+| `gh pr create` | Open a pull request |
+| `gh pr checks` | Watch CI |
+| `gh workflow run` | Trigger a workflow |
 
 ## First-time setup (contributors)
 
 ```bash
-git clone <your-fork-url> ~/Code/bwa-neo
+gh repo clone YOUR_LOGIN/bwa-neo ~/Code/bwa-neo
 cd ~/Code/bwa-neo
 cmake -S . -B build -DBUILD_TESTING=ON
 cmake --build build
