@@ -13,6 +13,14 @@ For production workflows, prefer the original upstream tools (`lh3/bwa` and
 `bwa-mem2`) and treat this fork as experimental unless you are intentionally
 evaluating these changes.
 
+It is primarily an **agentic-programming experiment** to refactor BWA, speed up and
+parallelize `bwa aln` and `samse`/`sampe`, and progressively uniformize the code
+organization between BWA-MEM and bwa-mem2.
+
+For production workflows, prefer the original upstream tools (`lh3/bwa` and
+`bwa-mem2`) and treat this fork as experimental unless you are intentionally
+evaluating these changes.
+
 **Quick start**
 
 ```bash
