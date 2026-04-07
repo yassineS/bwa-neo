@@ -73,7 +73,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: [gcc, clang]
+        # clang intermittently segfaults compiling large .c files under QEMU arm64
+        # (run-on-arch); gcc is stable. x86_64 still builds with both compilers above.
+        compiler: [gcc]
 
     steps:
       - name: Checkout
