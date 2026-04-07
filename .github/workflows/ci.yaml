@@ -82,11 +82,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Compile with ${{ matrix.compiler }} (aarch64)
-        uses: uraimo/run-on-arch-action@v2
+        # v3.x fixes sporadic QEMU segfaults seen with v2 + clang; omit githubToken so
+        # forks/orgs without GHCR package:create do not fail on cache push ("denied").
+        uses: uraimo/run-on-arch-action@v3
         with:
           arch: aarch64
           distro: ubuntu20.04
-          githubToken: ${{ github.token }}
           dockerRunArgs: |
             --volume "${PWD}:/bwa"
           install: |
