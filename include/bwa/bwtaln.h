@@ -121,6 +121,7 @@ typedef struct {
 	int max_occ;
 	int n_multi, N_multi;
 	int type, is_sw, is_preload;
+	int n_threads;
 	double ap_prior;
 } pe_opt_t;
 

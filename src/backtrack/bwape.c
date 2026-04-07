@@ -12,6 +12,10 @@
 #include "bwa.h"
 #include "ksw.h"
 
+#ifdef HAVE_PTHREAD
+#include <pthread.h>
+#endif
+
 #ifdef USE_MALLOC_WRAPPERS
 #  include "malloc_wrap.h"
 #endif
@@ -61,6 +65,7 @@ pe_opt_t *bwa_init_pe_opt()
 	po->N_multi = 10;
 	po->type = BWA_PET_STD;
 	po->is_sw = 1;
+	po->n_threads = 1;
 	po->ap_prior = 1e-5;
 	return po;
 }
@@ -621,6 +626,58 @@ ubyte_t *bwa_paired_sw(const bntseq_t *bns, const ubyte_t *_pacseq, int n_seqs, 
 	return pacseq;
 }
 
+#ifdef HAVE_PTHREAD
+typedef struct {
+	const bntseq_t *bns;
+	bwa_seq_t *seqs;
+	ubyte_t *pacseq;
+	int start, end;
+} bwa_refine_pe_aux_t;
+
+static void *bwa_refine_pe_worker(void *data)
+{
+	bwa_refine_pe_aux_t *a = (bwa_refine_pe_aux_t*)data;
+	bwa_refine_gapped(a->bns, a->end - a->start, a->seqs + a->start, a->pacseq);
+	return 0;
+}
+
+static void bwa_refine_gapped_mt(const bntseq_t *bns, int n_seqs, bwa_seq_t *seqs, ubyte_t *pacseq, int n_threads)
+{
+	int t, n_workers, chunk;
+	pthread_t *tid;
+	bwa_refine_pe_aux_t *aux;
+	if (n_threads < 1) n_threads = 1;
+	if (n_threads == 1 || n_seqs <= 1) {
+		bwa_refine_gapped(bns, n_seqs, seqs, pacseq);
+		return;
+	}
+	n_workers = n_threads < n_seqs ? n_threads : n_seqs;
+	chunk = (n_seqs + n_workers - 1) / n_workers;
+	tid = (pthread_t*)calloc(n_workers, sizeof(pthread_t));
+	aux = (bwa_refine_pe_aux_t*)calloc(n_workers, sizeof(bwa_refine_pe_aux_t));
+	for (t = 0; t < n_workers; ++t) {
+		aux[t].bns = bns; aux[t].seqs = seqs; aux[t].pacseq = pacseq;
+		aux[t].start = t * chunk;
+		aux[t].end = aux[t].start + chunk;
+		if (aux[t].end > n_seqs) aux[t].end = n_seqs;
+		if (aux[t].start < aux[t].end)
+			pthread_create(&tid[t], 0, bwa_refine_pe_worker, &aux[t]);
+	}
+	for (t = 0; t < n_workers; ++t) {
+		if (aux[t].start < aux[t].end)
+			pthread_join(tid[t], 0);
+	}
+	free(tid);
+	free(aux);
+}
+#else
+static void bwa_refine_gapped_mt(const bntseq_t *bns, int n_seqs, bwa_seq_t *seqs, ubyte_t *pacseq, int n_threads)
+{
+	(void)n_threads;
+	bwa_refine_gapped(bns, n_seqs, seqs, pacseq);
+}
+#endif
+
 void bwa_sai2sam_pe_core(const char *prefix, char *const fn_sa[2], char *const fn_fa[2], pe_opt_t *popt, const char *rg_line)
 {
 	extern bwa_seqio_t *bwa_open_reads(int mode, const char *fn_fa);
@@ -692,7 +749,7 @@ void bwa_sai2sam_pe_core(const char *prefix, char *const fn_sa[2], char *const f
 
 		fprintf(stderr, "[bwa_sai2sam_pe_core] refine gapped alignments... ");
 		for (j = 0; j < 2; ++j)
-			bwa_refine_gapped(bns, n_seqs, seqs[j], pacseq);
+			bwa_refine_gapped_mt(bns, n_seqs, seqs[j], pacseq, popt->n_threads);
 		fprintf(stderr, "%.2f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC); t = clock();
 		if (pac == 0) free(pacseq);
 
@@ -737,7 +794,7 @@ int bwa_sai2sam_pe(int argc, char *argv[])
 	char *prefix, *rg_line = 0;
 
 	popt = bwa_init_pe_opt();
-	while ((c = getopt(argc, argv, "a:o:sPn:N:c:f:Ar:")) >= 0) {
+	while ((c = getopt(argc, argv, "a:o:sPn:N:c:f:Ar:t:")) >= 0) {
 		switch (c) {
 		case 'r':
 			if ((rg_line = bwa_set_rg(optarg)) == 0) return 1;
@@ -751,6 +808,7 @@ int bwa_sai2sam_pe(int argc, char *argv[])
 		case 'c': popt->ap_prior = atof(optarg); break;
 		case 'f': xreopen(optarg, "w", stdout); break;
 		case 'A': popt->force_isize = 1; break;
+		case 't': popt->n_threads = atoi(optarg); break;
 		default: return 1;
 		}
 	}
@@ -763,6 +821,7 @@ int bwa_sai2sam_pe(int argc, char *argv[])
 		fprintf(stderr, "         -n INT   maximum hits to output for paired reads [%d]\n", popt->n_multi);
 		fprintf(stderr, "         -N INT   maximum hits to output for discordant pairs [%d]\n", popt->N_multi);
 		fprintf(stderr, "         -c FLOAT prior of chimeric rate (lower bound) [%.1le]\n", popt->ap_prior);
+		fprintf(stderr, "         -t INT   number of threads for gapped-refine phase [%d]\n", popt->n_threads);
         fprintf(stderr, "         -f FILE  sam file to output results to [stdout]\n");
 		fprintf(stderr, "         -r STR   read group header line such as `@RG\\tID:foo\\tSM:bar' [null]\n");
 		fprintf(stderr, "         -P       preload index into memory (for base-space reads only)\n");
@@ -778,6 +837,7 @@ int bwa_sai2sam_pe(int argc, char *argv[])
 		fprintf(stderr, "[%s] fail to locate the index\n", __func__);
 		return 1;
 	}
+	if (popt->n_threads < 1) popt->n_threads = 1;
 	bwa_sai2sam_pe_core(prefix, argv + optind + 1, argv + optind+3, popt, rg_line);
 	free(prefix); free(popt);
 	return 0;

@@ -3,6 +3,8 @@
 [![GitHub Downloads](https://img.shields.io/github/downloads/lh3/bwa/total.svg?style=flat&label=GitHub%20downloads)](https://github.com/lh3/bwa/releases)
 [![BioConda Install](https://img.shields.io/conda/dn/bioconda/bwa.svg?style=flag&label=BioConda%20install)](https://anaconda.org/bioconda/bwa)
 
+> **bwa-neo note:** This fork is primarily an **agentic-programming experiment** to refactor BWA, speed up and parallelize `bwa aln` and `samse`/`sampe`, and progressively uniformize BWA-MEM and bwa-mem2 codebases. For production workflows, prefer upstream [`lh3/bwa`](https://github.com/lh3/bwa) and [`bwa-mem2`](https://github.com/bwa-mem2/bwa-mem2).
+
 **Note: [minimap2][minimap2] has replaced BWA-MEM for __PacBio and Nanopore__ read
 alignment.** It retains all major BWA-MEM features, but is ~50 times as fast,
 more versatile, more accurate and produces better base-level alignment.

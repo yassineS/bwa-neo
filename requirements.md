@@ -28,6 +28,7 @@ A maintained fork of BWA that keeps the **`aln` / `samse` / `sampe`** pipeline r
 |----|--------|---------------------|
 | R3.1 | As a user, I can speed up `bwa aln` with `-t` (existing upstream). | Documented; threads ≥ 1. |
 | R3.2 | As a user, I can speed up `bwa samse` coordinate conversion with `-t`. | `-t N` uses multiple threads for the SA-to-PAC position phase; default `-t 1` preserves legacy behaviour. |
+| R3.2b | As a user, I can speed up `bwa sampe` post-processing with `-t`. | `-t N` uses multiple threads for gapped refinement in `sampe`; `-t 1` and invalid values (e.g. `-t 0`) preserve legacy output ordering and content. |
 | R3.3 | As a user, I get deterministic SAM order when using parallelism where documented. | Output order unchanged vs single-threaded for `samse` pac_pos phase (per-read processing independent). |
 
 ### R4 — Testing

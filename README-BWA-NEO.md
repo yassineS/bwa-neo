@@ -5,6 +5,13 @@
 **Use a single clone:** `~/Code/bwa-neo` is the canonical working tree for this fork. Open that folder as the **Cursor / IDE workspace root** (not `~`). **Agent handoff:** see **[`AGENTS.md`](AGENTS.md)** for pointers, layout, build/test, and GitHub. See `docs/DEVELOPMENT.md` for Git branching and commits.
 
 This tree is the **bwa-neo** fork layout (see `requirements.md`, `design.md`, `tasks.md`).
+It is primarily an **agentic-programming experiment** to refactor BWA, speed up and
+parallelize `bwa aln` and `samse`/`sampe`, and progressively uniformize the code
+organization between BWA-MEM and bwa-mem2.
+
+For production workflows, prefer the original upstream tools (`lh3/bwa` and
+`bwa-mem2`) and treat this fork as experimental unless you are intentionally
+evaluating these changes.
 
 **Quick start**
 
@@ -24,6 +31,7 @@ cmake -S . -B build && cmake --build build && ctest --test-dir build
 
 - CMake + GoogleTest scaffold; smoke alignment test.
 - `bwa samse -t N` — parallel coordinate conversion (pthread).
+- `bwa sampe -t N` — parallel gapped-refinement phase (pthread) with output parity tests.
 - Optional bwa-mem2: `scripts/fetch-bwa-mem2.sh` (prefer full `git clone --recursive` of bwa-mem2 for a complete build).
 - `benchmarks/refbias/` — reference-bias / performance workflow skeleton.
 

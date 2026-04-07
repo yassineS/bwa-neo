@@ -23,4 +23,21 @@ if ! cmp -s got.pair.first11.tsv "${FIX}/expected.pair.first11.tsv"; then
   exit 1
 fi
 
+# Threaded sampe must match single-threaded output (normal and edge thread values).
+"$BWA" sampe -t 4 ref.fa r1.sai r2.sai r1.fq r2.fq 2>/dev/null | awk '/^pair\t/{
+  for(i=1;i<=11;i++){ printf "%s%s", $i, (i<11 ? "\t" : "\n") }
+}' > got.pair.threaded.first11.tsv
+if ! cmp -s got.pair.threaded.first11.tsv "${FIX}/expected.pair.first11.tsv"; then
+  echo "golden_sampe FAIL: sampe -t output differs from single-threaded" >&2
+  exit 1
+fi
+
+"$BWA" sampe -t 0 ref.fa r1.sai r2.sai r1.fq r2.fq 2>/dev/null | awk '/^pair\t/{
+  for(i=1;i<=11;i++){ printf "%s%s", $i, (i<11 ? "\t" : "\n") }
+}' > got.pair.thread0.first11.tsv
+if ! cmp -s got.pair.thread0.first11.tsv "${FIX}/expected.pair.first11.tsv"; then
+  echo "golden_sampe FAIL: sampe -t 0 should clamp to single-thread behavior" >&2
+  exit 1
+fi
+
 echo "golden_sampe OK"
