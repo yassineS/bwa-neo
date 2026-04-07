@@ -2,7 +2,8 @@
 
 ## Bootstrap
 
-- [x] Import lh3/bwa sources under `/Users/yassinesouilmi/Code/bwa-neo`
+- [x] **`AGENTS.md`** — pointers for agents (workspace path, build, test, Git, layout)
+- [x] Import lh3/bwa sources under `~/Code/bwa-neo`
 - [x] Add `requirements.md`, `design.md`, `tasks.md`
 - [x] Add CMake build; keep Makefile
 - [x] Add `CONTRIBUTING.md`, `SECURITY.md`, `MAINTAINERS.md`

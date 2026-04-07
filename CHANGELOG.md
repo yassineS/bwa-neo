@@ -4,6 +4,7 @@
 
 ### Added
 
+- **`AGENTS.md`**: handoff for AI agents and contributors (workspace `~/Code/bwa-neo`, read order, build/test, layout, CI, caveats). Linked from `README-BWA-NEO.md` and `CONTRIBUTING.md`.
 - **Golden SAM regression**: `tests/golden_sam.sh`, `tests/fixtures/tiny/` (mapped 32bp read; first 11 fields; `samse -t` parity). CI runs it on the Make path too.
 - **README-BWA-NEO.md**: CI status badge for `yassineS/bwa-neo`.
 - **`docs/DEVELOPMENT.md`**: Git workflow (`main`, `feat/*`, `fix/*`), commits, first-time `git` setup, and **GitHub CLI (`gh`)** (`gh repo create … --push`, `gh auth setup-git`, troubleshooting).

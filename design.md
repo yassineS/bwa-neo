@@ -1,6 +1,6 @@
 # bwa-neo — design
 
-**Single working copy:** `/Users/yassinesouilmi/Code/bwa-neo`. Git practices: **`docs/DEVELOPMENT.md`**.
+**Single working copy:** `~/Code/bwa-neo` as the opened workspace root. Agent handoff: **`AGENTS.md`**. Git practices: **`docs/DEVELOPMENT.md`**.
 
 ## Architecture (target)
 

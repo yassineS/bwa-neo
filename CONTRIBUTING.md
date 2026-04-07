@@ -1,8 +1,8 @@
 # Contributing to bwa-neo
 
-Read **`requirements.md`**, **`design.md`**, and **`tasks.md`** before large changes.
+Read **`requirements.md`**, **`design.md`**, and **`tasks.md`** before large changes. For **AI agents** or workspace setup, read **[`AGENTS.md`](AGENTS.md)** first.
 
-**Repository location:** clone and work only under **`~/Code/bwa-neo`** (or one path of your choice)—do not mirror the project in `~/bwa-neo` or other duplicates.
+**Repository location:** clone and work only under **`~/Code/bwa-neo`**—open that path as the workspace root; do not use the home directory as the project root for bwa-neo.
 
 **Git workflow:** see **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)** for branches (`main`, `feat/*`, `fix/*`), commits, PR flow, and **GitHub CLI (`gh`)** commands (`gh repo create`, `gh pr create`, etc.).
 

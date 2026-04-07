@@ -1,6 +1,6 @@
 # bwa-neo — requirements
 
-Work directory: **`/Users/yassinesouilmi/Code/bwa-neo` only**—no second working copy (e.g. under `$HOME/bwa-neo`). Git workflow: **`docs/DEVELOPMENT.md`**. Changes follow **requirements → design → tasks** (see `design.md`, `tasks.md`).
+Work directory: **`~/Code/bwa-neo` only** (e.g. `/Users/yassinesouilmi/Code/bwa-neo`)—no second working copy; use that path as the **IDE / agent workspace root**, not `$HOME`. Onboarding for agents: **`AGENTS.md`**. Git workflow: **`docs/DEVELOPMENT.md`**. Changes follow **requirements → design → tasks** (see `design.md`, `tasks.md`).
 
 ## Product vision
 
