@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(bwa-neo LANGUAGES C)
+project(bwa-neo LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BWA_NEO_BUILD_BWA_MEM2 "Fetch and build bwa-mem2 into third_party/bwa-mem2" OFF)
