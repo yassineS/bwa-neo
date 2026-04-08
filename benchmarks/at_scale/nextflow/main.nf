@@ -1,47 +1,84 @@
 #!/usr/bin/env nextflow
 /*
- * At-scale correctness + performance benchmark for bwa-neo vs baselines.
- *
- * IMPLEMENTATION NOTES (for contributors):
- *
- * 1) Correctness
- *    - Build classic BWA index once; run: baseline `bwa` and `params.bwa_neo` with identical argv.
- *    - For mem2: build `.0123` index with bwa-mem2; compare neo mem2 vs third_party bwa-mem2.
- *    - Normalize SAM (sort, optional field strip) before diff.
- *
- * 2) Performance
- *    - Emit TSV rows: tool, stage, threads, elapsed_sec, max_rss_kb, n_reads
- *    - Call plotting script in workflow completion hook or final process.
- *
- * 3) Data
- *    - Use Zenodo modules or curl with checksum verification (see benchmarks/at_scale/README.md).
+ * bwa-neo benchmark smoke: index + aln + samse on tiny fixtures.
+ * Optional: params.bwa_baseline — run same pipeline and diff first 11 SAM fields vs neo.
  */
+nextflow.enable.dsl = 2
+
+process BWA_ALN_SAMSE {
+    tag "${meta.id}"
+    publishDir "${params.outdir}/${meta.id}", mode: 'copy'
+
+    input:
+        tuple val(meta), path(ref), path(reads)
+
+    output:
+        tuple val(meta), path("${meta.id}.sam"), emit: sam
+        path('versions.txt'), emit: versions
+
+    script:
+        def bw = meta.bwa_bin as String
+        def sid = meta.id as String
+        """
+        set -euo pipefail
+        # Inputs are staged by Nextflow (symlinks); use them in place for index + aln + samse
+        '${bw}' index ${ref}
+        '${bw}' aln -t ${params.threads_aln} ${ref} ${reads} > reads.sai
+        '${bw}' samse -t ${params.threads_samse} ${ref} reads.sai ${reads} > ${sid}.sam
+        echo "id=${meta.id}" > versions.txt
+        echo "bwa=${bw}" >> versions.txt
+        '${bw}' 2>&1 | head -n 3 >> versions.txt || true
+        """
+}
+
+process SAM_FIRST11_DIFF {
+    publishDir "${params.outdir}/parity", mode: 'copy'
+
+    input:
+        tuple path(neo_sam), path(base_sam)
+
+    output:
+        path('parity.ok'), emit: ok
+        path('parity.first11.diff'), optional: true, emit: diff
+
+    script:
+        """
+        set -euo pipefail
+        awk '/^[^@]/{
+          for(i=1;i<=11;i++) printf "%s%s", \$i, (i<11 ? "\\t" : "\\n")
+          exit
+        }' '${neo_sam}' > neo.first11.tsv
+        awk '/^[^@]/{
+          for(i=1;i<=11;i++) printf "%s%s", \$i, (i<11 ? "\\t" : "\\n")
+          exit
+        }' '${base_sam}' > base.first11.tsv
+        if cmp -s neo.first11.tsv base.first11.tsv; then
+          echo "SAM first-11 fields: neo == baseline OK" > parity.ok
+        else
+          echo "SAM first-11 fields: MISMATCH" > parity.ok
+          diff -u base.first11.tsv neo.first11.tsv > parity.first11.diff || true
+          exit 1
+        fi
+        """
+}
 
 workflow {
-    // Stub: replace with channel-driven download + map steps
-    Channel.empty()
-        .view { "Define processes: FETCH_REF, FETCH_READS, " +
-                "SIM_REF_SLICE (optional), SIM_MODERN, SIM_ANCIENT, " +
-                "INDEX_CLASSIC, INDEX_MEM2, " +
-                "RUN_ALN_SAMSE_BASELINE, RUN_ALN_SAMSE_NEO, DIFF_SAM, BENCH_*, ACCURACY (optional)" }
-}
+    def ref = file(params.ref_fa, checkIfExists: true)
+    def reads = file(params.reads_fq, checkIfExists: true)
 
-/*
- * Example process skeleton (uncomment and wire params when implementing):
+    def neo_meta = [id: 'neo', bwa_bin: params.bwa_neo]
+    def ch = channel.of(tuple(neo_meta, ref, reads))
 
-process RUN_ALN_SAMSE {
-    tag "${sample_id}"
-    input:
-        tuple val(sample_id), path(ref), path(reads)
-    output:
-        tuple val(sample_id), path("${sample_id}.neo.sam"), emit: sam
-    script:
-    """
-    set -euo pipefail
-    ${params.bwa_neo} index ref.fa
-    ${params.bwa_neo} aln -t ${params.threads_aln} ref.fa reads.fq > reads.sai
-    /usr/bin/time -v -o neo.time.txt ${params.bwa_neo} samse -t ${params.threads_samse} ref.fa reads.sai reads.fq \\
-        > ${sample_id}.neo.sam 2>neo.stderr
-    """
+    if (params.bwa_baseline) {
+        def base_meta = [id: 'baseline', bwa_bin: params.bwa_baseline]
+        ch = ch.mix(channel.of(tuple(base_meta, ref, reads)))
+    }
+
+    BWA_ALN_SAMSE(ch)
+
+    if (params.bwa_baseline) {
+        def neo_sam = BWA_ALN_SAMSE.out.sam.filter { meta, sam -> meta.id == 'neo' }.map { m, s -> s }.first()
+        def base_sam = BWA_ALN_SAMSE.out.sam.filter { meta, sam -> meta.id == 'baseline' }.map { m, s -> s }.first()
+        SAM_FIRST11_DIFF(neo_sam.combine(base_sam))
+    }
 }
-*/

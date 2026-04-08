@@ -9,3 +9,10 @@ Makefile.bak
 bwamem-lite
 /build/
 /third_party/bwa-mem2/
+
+# Nextflow (benchmarks/at_scale)
+.nextflow_home/
+benchmarks/at_scale/nextflow/work/
+benchmarks/at_scale/nextflow/.nextflow/
+benchmarks/at_scale/nextflow/.nextflow.log*
+benchmarks/at_scale/nextflow/results*/

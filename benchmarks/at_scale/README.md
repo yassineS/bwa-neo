@@ -96,19 +96,46 @@ Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenod
 
 Scripts should live under `benchmarks/at_scale/plot/` and read only generated TSV/CSV.
 
-## Running (once Nextflow workflow is implemented)
+## Running (Nextflow smoke)
+
+From the **repository root**, build `bwa` (`make -j`), then either:
 
 ```bash
-cd benchmarks/at_scale/nextflow
-nextflow run main.nf \
-  -profile docker \
-  --outdir results \
-  --bwa_neo /path/to/bwa-neo/bwa \
-  --bwa_baseline /path/to/lh3-bwa/bwa \
-  --bwa_mem2 /path/to/bwa-mem2/bwa-mem2
+make -C benchmarks/at_scale smoke-nf
 ```
 
-Profiles: `standard` (local), `slurm` or `awsbatch` for HPC/cloud.
+Or manually (keeps Nextflow cache under **`.nextflow_home/`** at repo root):
+
+```bash
+export NXF_HOME="$(pwd)/.nextflow_home"
+mkdir -p "$NXF_HOME"
+cd benchmarks/at_scale/nextflow
+nextflow run main.nf -profile standard --outdir "$(pwd)/results_smoke"
+```
+
+Defaults use `tests/fixtures/tiny/ref.fa` and `reads.fq`. Outputs: `results_smoke/neo/neo.sam` (or `baseline.sam` when that track runs) and `versions.txt`.
+
+**Optional SAM parity** (first 11 alignment fields) vs another BWA binary:
+
+```bash
+nextflow run main.nf -profile standard \
+  --bwa_baseline /path/to/lh3/bwa \
+  --outdir results_parity
+```
+
+On success, `results_parity/parity/parity.ok` records a match; mismatches write `parity.first11.diff` and fail the run.
+
+### Seqera AI review
+
+With the [Seqera AI CLI](https://docs.seqera.io/platform-cloud/seqera-ai/) authenticated (`seqera login` or `SEQERA_ACCESS_TOKEN`), run from the repo root so **`.agents/skills/`** is discovered:
+
+```bash
+seqera ai --headless "Sanity-check my Nextflow file benchmarks/at_scale/nextflow/main.nf for DSL2 issues"
+```
+
+If the CLI is not logged in, validation is still covered by `make -C benchmarks/at_scale smoke-nf` and the golden bash tests.
+
+Profiles: `standard` (local executor). Add `docker` / `slurm` / `awsbatch` profiles when you containerize or offload.
 
 ## Tiers
 

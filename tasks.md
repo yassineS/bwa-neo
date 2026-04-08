@@ -38,8 +38,8 @@
 ## Refbias benchmarks
 
 - [x] `benchmarks/refbias/README.md` + `Makefile` smoke target
-- [x] `benchmarks/at_scale/` — design doc + Nextflow stub for scale parity vs lh3/bwa and bwa-mem2 (see README)
-- [ ] Implement full Nextflow workflow (fetch, index, diff, hyperfine, plots; include **simulation** tracks for modern + ancient DNA per `benchmarks/at_scale/README.md`)
+- [x] `benchmarks/at_scale/` — design doc + **Nextflow smoke** (`index` / `aln` / `samse` on tiny fixtures; optional `--bwa_baseline` first-11 SAM parity); `make -C benchmarks/at_scale smoke-nf`
+- [ ] Extend Nextflow workflow (fetch, hyperfine, plots; **simulation** tracks for modern + ancient DNA per `benchmarks/at_scale/README.md`)
 - [ ] Download Zenodo 14234666 assets via scripted checksum
 - [ ] Nightly full benchmark job (optional)
 
