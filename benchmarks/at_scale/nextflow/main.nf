@@ -1,20 +1,36 @@
 #!/usr/bin/env nextflow
 
-process GENERATE_SYNTHETIC_DATASETS {
-    tag "datasets-1M"
-    publishDir "${params.outdir}/datasets", mode: 'copy'
+process RUN_PUBLICATION_BENCH {
+    tag "publication-bench"
+    publishDir "${params.outdir}/perf", mode: 'copy'
+    publishDir "${params.outdir}/parity", mode: 'copy'
 
     input:
         path ref_modern, stageAs: "ref_modern.fa"
         path ref_ancient, stageAs: "ref_ancient.fa"
 
     output:
-        tuple path("modern_se_1M.fq"), path("ancient_se_1M.fq"), path("ancient_pe_r1_1M.fq"), path("ancient_pe_r2_1M.fq")
+        path "raw_metrics.tsv"
+        path "summary_metrics.tsv"
+        path "speedup_metrics.tsv"
+        path "modern_mem_parity.tsv"
 
     script:
         """
         set -euo pipefail
+
+        command -v art_illumina >/dev/null 2>&1 || { echo "Missing art_illumina in Pixi env"; exit 1; }
+        [ -x "${projectDir}/../.simulators/pygargammel" ] || { echo "Missing ${projectDir}/../.simulators/pygargammel (run pixi task prepare-simulators)"; exit 1; }
+
+        REF_LEN_MOD=\$(awk '!/^>/{n+=length(\$0)} END{print n+0}' "${ref_modern}")
+        FOLD_MOD=\$(awk -v n=${params.modern_reads_n} -v rl="\$REF_LEN_MOD" 'BEGIN{if(rl>0) printf "%.8f", (n*2*150)/rl; else print "1.0"}')
+        art_illumina -ss HS25 -i "${ref_modern}" -p -l 150 -f "\$FOLD_MOD" -m 220 -s 20 -rs ${params.modern_seed} -o modern_ >/dev/null 2>&1
+        mv modern_1.fq modern_r1.fq
+        mv modern_2.fq modern_r2.fq
+
         python - <<'PY'
+import random
+
 def load_ref(path):
     seq=[]
     with open(path) as f:
@@ -22,407 +38,165 @@ def load_ref(path):
             if not line.startswith(">"):
                 seq.append(line.strip().upper())
     s="".join(seq)
-    if len(s) < 300:
-        s = s * ((300 // len(s)) + 2)
+    if len(s) < 500:
+        s = s * ((500 // len(s)) + 2)
     return s
 
-def damage(seq):
-    a=list(seq)
-    for i in range(min(3, len(a))):
-        if a[i] == 'C':
-            a[i] = 'T'
-    for i in range(1, min(4, len(a)+1)):
-        if a[-i] == 'G':
-            a[-i] = 'A'
-    return "".join(a)
-
-def write_se(path, ref, n, read_len, damaged, prefix):
-    ref_len = len(ref)
+def write_fasta(path, records):
     with open(path, "w") as out:
-        for i in range(n):
-            start = (i * 37) % (ref_len - read_len)
-            seq = ref[start:start+read_len]
-            if damaged:
-                seq = damage(seq)
-            out.write(f"@{prefix}_{i}\\n{seq}\\n+\\n{'I'*read_len}\\n")
+        for name, seq in records:
+            out.write(f">{name}\\n{seq}\\n")
 
-def write_pe(r1_path, r2_path, ref, n, read_len, insert, damaged, prefix):
-    ref_len = len(ref)
-    with open(r1_path, "w") as r1, open(r2_path, "w") as r2:
-        for i in range(n):
-            start = (i * 53) % (ref_len - insert - read_len)
-            s1 = ref[start:start+read_len]
-            s2 = ref[start+insert:start+insert+read_len]
-            if damaged:
-                s1 = damage(s1)
-                s2 = damage(s2)
-            r1.write(f"@{prefix}_{i}/1\\n{s1}\\n+\\n{'I'*read_len}\\n")
-            r2.write(f"@{prefix}_{i}/2\\n{s2}\\n+\\n{'I'*read_len}\\n")
+ref = load_ref("${ref_ancient}")
+n = int("${params.ancient_reads_n}")
+rng = random.Random(int("${params.ancient_seed}"))
 
-modern = load_ref("${ref_modern}")
-ancient = load_ref("${ref_ancient}")
-nm = int("${params.modern_reads_n}")
-na = int("${params.ancient_reads_n}")
+merged=[]; r1=[]; r2=[]
+for i in range(n):
+    s = rng.randrange(0, len(ref)-260)
+    merged.append((f"ancm_{i}", ref[s:s+90]))
+    r1.append((f"ancp_{i}/1", ref[s:s+75]))
+    r2.append((f"ancp_{i}/2", ref[s+120:s+195]))
 
-write_se("modern_se_1M.fq", modern, nm, 150, False, "modern")
-write_se("ancient_se_1M.fq", ancient, na, 75, True, "ancient_se")
-write_pe("ancient_pe_r1_1M.fq", "ancient_pe_r2_1M.fq", ancient, na, 75, 120, True, "ancient_pe")
+write_fasta("ancient_merged.fa", merged)
+write_fasta("ancient_r1.fa", r1)
+write_fasta("ancient_r2.fa", r2)
 PY
-        """
-}
 
-process CAPTURE_VERSION {
-    tag "${meta.tool}"
-    publishDir "${params.outdir}/versions", mode: 'copy'
+        python "${projectDir}/../.simulators/pygargammel" --fasta ancient_merged.fa --nick-freq ${params.adna_nick_freq} --overhang-parameter ${params.adna_overhang_parameter} --double-strand-deamination ${params.adna_ds_deamination} --single-strand-deamination ${params.adna_ss_deamination} --output ancient_merged_damaged.fa --log ancient_merged.log
+        python "${projectDir}/../.simulators/pygargammel" --fasta ancient_r1.fa --nick-freq ${params.adna_nick_freq} --overhang-parameter ${params.adna_overhang_parameter} --double-strand-deamination ${params.adna_ds_deamination} --single-strand-deamination ${params.adna_ss_deamination} --output ancient_r1_damaged.fa --log ancient_r1.log
+        python "${projectDir}/../.simulators/pygargammel" --fasta ancient_r2.fa --nick-freq ${params.adna_nick_freq} --overhang-parameter ${params.adna_overhang_parameter} --double-strand-deamination ${params.adna_ds_deamination} --single-strand-deamination ${params.adna_ss_deamination} --output ancient_r2_damaged.fa --log ancient_r2.log
 
-    input:
-        val meta
-
-    output:
-        path "${meta.tool}.txt"
-
-    script:
-        """
-        set -euo pipefail
-        BIN='${meta.bin}'
-        if command -v shasum >/dev/null 2>&1; then
-          SHA=\$(shasum -a 256 "\$BIN" | awk '{print \$1}')
-        else
-          SHA=\$(sha256sum "\$BIN" | awk '{print \$1}')
-        fi
-        {
-          echo -e "binary_path\\t\$BIN"
-          echo -e "binary_sha256\\t\$SHA"
-          echo -e "version_line\\t\$(\"\$BIN\" 2>&1 | awk 'NF{print; exit}' || true)"
-        } > '${meta.tool}.txt'
-        """
-}
-
-process MODERN_MEM_BENCH {
-    tag "${meta.tool}"
-    publishDir "${params.outdir}/perf/modern", mode: 'copy'
-
-    input:
-        val meta
-        path ref_modern
-        path reads_modern
-
-    output:
-        path "${meta.tool}_modern_mem_metrics.tsv"
-
-    script:
-        """
-        set -euo pipefail
-        BIN='${meta.bin}'
-        "\$BIN" index '${ref_modern}'
-
-        count_stats() { awk 'NR%4==2{r++; b+=length(\$0)} END{printf "%d\\t%d\\n", r, b}' "\$1"; }
-        read READS BASES < <(count_stats '${reads_modern}' | tr '\\t' ' ')
-
-        parse_time() {
-          local f="\$1"
-          local elapsed rss
-          if [ ! -f "\$f" ]; then
-            printf "0\\t0\\n"
-            return 0
-          fi
-          elapsed=\$(awk '/^real /{print \$2}' "\$f")
-          rss=\$(awk '/maximum resident set size/{print \$1}' "\$f" | tail -n 1)
-          [ -n "\$elapsed" ] || elapsed=0
-          [ -n "\$rss" ] || rss=0
-          printf "%s\\t%s\\n" "\$elapsed" "\$rss"
-        }
-
-        run_timed() {
-          local out_time="\$1"; shift
-          /usr/bin/time -p -o "\$out_time" "\$@" >/dev/null 2>/dev/null || true
-          return 0
-        }
-
-        echo -e "dataset\\tmode\\ttool\\tthreads\\trep\\telapsed_s\\tmax_rss_kb\\treads\\tbases\\tcommand" > '${meta.tool}_modern_mem_metrics.tsv'
-        for rep in \$(seq 1 ${params.performance_repeats}); do
-          for t in ${params.thread_grid}; do
-            run_timed "mem_\${rep}_\${t}.time" "\$BIN" mem -t "\$t" '${ref_modern}' '${reads_modern}'
-            read e r < <(parse_time "mem_\${rep}_\${t}.time" | tr '\\t' ' ')
-            echo -e "modern\\tmem\\t${meta.tool}\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$READS\\t\$BASES\\tbwa mem" >> '${meta.tool}_modern_mem_metrics.tsv'
-          done
-        done
-        """
-}
-
-process ANCIENT_ALN_BENCH {
-    tag "${meta.tool}"
-    publishDir "${params.outdir}/perf/ancient", mode: 'copy'
-
-    input:
-        val meta
-        path ref_ancient
-        path ancient_se
-        path ancient_pe_r1
-        path ancient_pe_r2
-
-    output:
-        path "${meta.tool}_ancient_aln_metrics.tsv"
-
-    script:
-        """
-        set -euo pipefail
-        BIN='${meta.bin}'
-        "\$BIN" index '${ref_ancient}'
-
-        count_stats() { awk 'NR%4==2{r++; b+=length(\$0)} END{printf "%d\\t%d\\n", r, b}' "\$1"; }
-        read READS_SE BASES_SE < <(count_stats '${ancient_se}' | tr '\\t' ' ')
-        read READS_PE BASES_PE < <(count_stats '${ancient_pe_r1}' | tr '\\t' ' ')
-
-        parse_time() {
-          local f="\$1"
-          local elapsed rss
-          if [ ! -f "\$f" ]; then
-            printf "0\\t0\\n"
-            return 0
-          fi
-          elapsed=\$(awk '/^real /{print \$2}' "\$f")
-          rss=\$(awk '/maximum resident set size/{print \$1}' "\$f" | tail -n 1)
-          [ -n "\$elapsed" ] || elapsed=0
-          [ -n "\$rss" ] || rss=0
-          printf "%s\\t%s\\n" "\$elapsed" "\$rss"
-        }
-
-        run_timed() {
-          local out_time="\$1"; shift
-          /usr/bin/time -p -o "\$out_time" "\$@" >/dev/null 2>/dev/null || true
-          return 0
-        }
-
-        echo -e "dataset\\tmode\\ttool\\tthreads\\trep\\telapsed_s\\tmax_rss_kb\\treads\\tbases\\tcommand" > '${meta.tool}_ancient_aln_metrics.tsv'
-        for rep in \$(seq 1 ${params.performance_repeats}); do
-          for t in ${params.thread_grid}; do
-            run_timed "se_\${rep}_\${t}.time" bash -lc "'\$BIN' aln -t \$t '${ref_ancient}' '${ancient_se}' > se.sai && '\$BIN' samse '${ref_ancient}' se.sai '${ancient_se}' > /dev/null"
-            read e r < <(parse_time "se_\${rep}_\${t}.time" | tr '\\t' ' ')
-            echo -e "ancient\\taln_se\\t${meta.tool}\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$READS_SE\\t\$BASES_SE\\tbwa aln+samse" >> '${meta.tool}_ancient_aln_metrics.tsv'
-
-            run_timed "pe_\${rep}_\${t}.time" bash -lc "'\$BIN' aln -t \$t '${ref_ancient}' '${ancient_pe_r1}' > r1.sai && '\$BIN' aln -t \$t '${ref_ancient}' '${ancient_pe_r2}' > r2.sai && '\$BIN' sampe '${ref_ancient}' r1.sai r2.sai '${ancient_pe_r1}' '${ancient_pe_r2}' > /dev/null"
-            read e r < <(parse_time "pe_\${rep}_\${t}.time" | tr '\\t' ' ')
-            echo -e "ancient\\taln_pe\\t${meta.tool}\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$READS_PE\\t\$BASES_PE\\tbwa aln+sampe" >> '${meta.tool}_ancient_aln_metrics.tsv'
-          done
-        done
-        """
-}
-
-process AGGREGATE_METRICS {
-    tag "aggregate"
-    publishDir "${params.outdir}/perf", mode: 'copy'
-
-    input:
-        path metric_files
-
-    output:
-        path "raw_metrics.tsv", emit: raw
-        path "summary_metrics.tsv", emit: summary
-        path "speedup_metrics.tsv", emit: speedup
-
-    script:
-        """
-        set -euo pipefail
-        cp "\$(printf "%s\\n" ${metric_files} | head -n 1)" raw_metrics.tsv
-        for f in ${metric_files}; do
-          if [ "\$f" != "\$(printf "%s\\n" ${metric_files} | head -n 1)" ]; then
-            tail -n +2 "\$f" >> raw_metrics.tsv
-          fi
-        done
-
-        awk 'BEGIN{
-            FS=OFS="\\t";
-            print "dataset","mode","tool","threads","n","elapsed_mean_s","elapsed_sd_s","elapsed_min_s","elapsed_max_s","rss_mean_kb","rss_sd_kb","reads","bases";
-          }
-          NR>1{
-            key=\$1 FS \$2 FS \$3 FS \$4;
-            n[key]++; se[key]+=\$6; se2[key]+=(\$6*\$6);
-            if (!(key in minE) || \$6<minE[key]) minE[key]=\$6;
-            if (!(key in maxE) || \$6>maxE[key]) maxE[key]=\$6;
-            sr[key]+=\$7; sr2[key]+=(\$7*\$7);
-            reads[key]=\$8; bases[key]=\$9;
-          }
-          END{
-            for (k in n){
-              me=se[k]/n[k]; ve=(se2[k]/n[k])-(me*me); if (ve<0) ve=0;
-              mr=sr[k]/n[k]; vr=(sr2[k]/n[k])-(mr*mr); if (vr<0) vr=0;
-              split(k,p,FS);
-              print p[1],p[2],p[3],p[4],n[k],me,sqrt(ve),minE[k],maxE[k],mr,sqrt(vr),reads[k],bases[k];
-            }
-          }' raw_metrics.tsv > summary_metrics.tsv
-
-        awk 'BEGIN{
-             FS=OFS="\\t";
-             print "dataset","mode","tool","threads","elapsed_mean_s","speedup_vs_thread1";
-          }
-          NR>1{
-             k=\$1 FS \$2 FS \$3;
-             t=\$4; e=\$6;
-             means[k FS t]=e;
-             if (t==1) base[k]=e;
-          }
-          END{
-             for (mt in means){
-                split(mt, a, FS);
-                key=a[1] FS a[2] FS a[3];
-                t=a[4];
-                b=base[key];
-                if (b > 0) sp=b/means[mt]; else sp=0;
-                print a[1],a[2],a[3],t,means[mt],sp;
-             }
-          }' summary_metrics.tsv > speedup_metrics.tsv
-
-        """
-}
-
-process PLOT_METRICS {
-    tag "plot"
-    publishDir "${params.outdir}/plot", mode: 'copy'
-
-    input:
-        path raw_metrics
-        path summary_metrics
-        path speedup_metrics
-
-    output:
-        path "runtime_bar.pdf"
-        path "runtime_bar.svg"
-        path "runtime_bar.png"
-        path "memory_bar.pdf"
-        path "memory_bar.svg"
-        path "memory_bar.png"
-        path "speedup_ratio.pdf"
-        path "speedup_ratio.svg"
-        path "speedup_ratio.png"
-
-    script:
-        """
-        set -euo pipefail
         python - <<'PY'
-import pandas as pd
-import matplotlib.pyplot as plt
+def fa_to_fq(fa, fq):
+    name=None; seq=[]
+    with open(fa) as fi, open(fq, "w") as fo:
+        for line in fi:
+            line=line.strip()
+            if not line: continue
+            if line.startswith(">"):
+                if name is not None:
+                    s="".join(seq)
+                    fo.write(f"@{name}\\n{s}\\n+\\n{'I'*len(s)}\\n")
+                name=line[1:]; seq=[]
+            else:
+                seq.append(line)
+        if name is not None:
+            s="".join(seq)
+            fo.write(f"@{name}\\n{s}\\n+\\n{'I'*len(s)}\\n")
 
-summary = pd.read_csv("${summary_metrics}", sep="\\t")
-summary["threads"] = pd.to_numeric(summary["threads"])
-summary["label"] = summary["dataset"] + "-" + summary["mode"] + "-" + summary["tool"] + "-t" + summary["threads"].astype(str)
-
-palette = {"neo":"#4477AA", "baseline":"#CC6677", "mem2":"#228833"}
-colors = [palette.get(x, "#999999") for x in summary["tool"]]
-
-fig, ax = plt.subplots(figsize=(11, 4.5))
-x = list(range(len(summary)))
-ax.bar(x, summary["elapsed_mean_s"], yerr=summary["elapsed_sd_s"], capsize=4, color=colors)
-ax.set_xticks(x)
-ax.set_xticklabels(summary["label"], rotation=55, ha="right")
-ax.set_ylabel("Elapsed time (s)")
-ax.set_title("Publication benchmarks runtime")
-fig.tight_layout()
-fig.savefig("runtime_bar.pdf"); fig.savefig("runtime_bar.svg"); fig.savefig("runtime_bar.png", dpi=300)
-plt.close(fig)
-
-fig, ax = plt.subplots(figsize=(11, 4.5))
-ax.bar(x, summary["rss_mean_kb"], yerr=summary["rss_sd_kb"], capsize=4, color=colors)
-ax.set_xticks(x)
-ax.set_xticklabels(summary["label"], rotation=55, ha="right")
-ax.set_ylabel("Max RSS (kB)")
-ax.set_title("Publication benchmarks memory")
-fig.tight_layout()
-fig.savefig("memory_bar.pdf"); fig.savefig("memory_bar.svg"); fig.savefig("memory_bar.png", dpi=300)
-plt.close(fig)
-
-t8 = summary[summary["threads"] == 8]
-rows = []
-for (dataset, mode), _ in t8.groupby(["dataset", "mode"]):
-    neo = t8[(t8["dataset"] == dataset) & (t8["mode"] == mode) & (t8["tool"] == "neo")]
-    base = t8[(t8["dataset"] == dataset) & (t8["mode"] == mode) & (t8["tool"] == "baseline")]
-    if len(neo) == 1 and len(base) == 1 and float(neo.iloc[0]["elapsed_mean_s"]) > 0:
-        rows.append({"group": f"{dataset}-{mode}", "speedup": float(base.iloc[0]["elapsed_mean_s"]) / float(neo.iloc[0]["elapsed_mean_s"])})
-df = pd.DataFrame(rows)
-if len(df) > 0:
-    fig, ax = plt.subplots(figsize=(6.5, 4))
-    ax.bar(df["group"], df["speedup"], color="#228833")
-    ax.axhline(1.0, linestyle="--", color="black", linewidth=1)
-    ax.set_ylabel("Speedup vs baseline (x)")
-    ax.set_title("bwa-neo speedup at 8 threads")
-    fig.tight_layout()
-    fig.savefig("speedup_ratio.pdf"); fig.savefig("speedup_ratio.svg"); fig.savefig("speedup_ratio.png", dpi=300)
-    plt.close(fig)
-else:
-    open("speedup_ratio.pdf", "wb").close()
-    open("speedup_ratio.svg", "w").close()
-    open("speedup_ratio.png", "wb").close()
+fa_to_fq("ancient_merged_damaged.fa", "ancient_merged.fq")
+fa_to_fq("ancient_r1_damaged.fa", "ancient_r1.fq")
+fa_to_fq("ancient_r2_damaged.fa", "ancient_r2.fq")
 PY
-        """
+
+        if [ "${params.use_zenodo_adna}" = "true" ]; then
+          python - <<'PY'
+import json, os, sys, urllib.request
+record = "${params.zenodo_record}".strip()
+base = f"https://zenodo.org/api/records/{record}"
+want = {
+  "merged": "${params.zenodo_merged_name}",
+  "r1": "${params.zenodo_r1_name}",
+  "r2": "${params.zenodo_r2_name}",
 }
+with urllib.request.urlopen(base) as r:
+    meta = json.load(r)
+files = meta.get("files", [])
+by_name = {f.get("key", ""): f for f in files}
+targets = [("merged","ancient_merged.fq"),("r1","ancient_r1.fq"),("r2","ancient_r2.fq")]
+for k, out in targets:
+    key = want[k].strip()
+    if not key:
+        continue
+    f = by_name.get(key)
+    if not f:
+        sys.exit(f"Zenodo file not found in record {record}: {key}")
+    url = f.get("links", {}).get("self")
+    if not url:
+        sys.exit(f"Missing download URL for: {key}")
+    urllib.request.urlretrieve(url, out)
+PY
+        fi
 
-process PUBLICATION_MANIFEST {
-    tag "manifest"
-    publishDir "${params.outdir}/manifest", mode: 'copy'
+        if [ -n "${params.ancient_merged_fq}" ] && [ -f "${params.ancient_merged_fq}" ]; then
+          cp "${params.ancient_merged_fq}" ancient_merged.fq
+        fi
+        if [ -n "${params.ancient_r1_fq}" ] && [ -f "${params.ancient_r1_fq}" ]; then
+          cp "${params.ancient_r1_fq}" ancient_r1.fq
+        fi
+        if [ -n "${params.ancient_r2_fq}" ] && [ -f "${params.ancient_r2_fq}" ]; then
+          cp "${params.ancient_r2_fq}" ancient_r2.fq
+        fi
 
-    input:
-        val manifest_json
+        count_reads() { awk 'NR%4==2{r++; b+=length(\$0)} END{printf "%d\\t%d\\n", r, b}' "\$1"; }
+        read MREADS MBASES < <(count_reads modern_r1.fq | tr '\\t' ' ')
+        read AREADS_M ABASES_M < <(count_reads ancient_merged.fq | tr '\\t' ' ')
+        read AREADS_P ABASES_P < <(count_reads ancient_r1.fq | tr '\\t' ' ')
 
-    output:
-        path "publication_manifest.json"
+        echo -e "dataset\\tmode\\ttool\\tthreads\\trep\\telapsed_s\\tmax_rss_kb\\treads\\tbases\\tcommand" > raw_metrics.tsv
+        parse_real() { awk '/^real /{print \$2}' "\$1"; }
+        parse_rss() { awk '/maximum resident set size/{print \$1}' "\$1" | tail -n1; }
+        run_time() {
+          local out_time="\$1"; shift
+          /usr/bin/time -l -p "\$@" >/dev/null 2>"\$out_time" || true
+          [ -s "\$out_time" ] || echo "real 0" > "\$out_time"
+        }
 
-    script:
-        """
-        set -euo pipefail
-        cat > publication_manifest.json <<'JSON'
-${manifest_json}
-JSON
+        "${params.bwa_neo}" index "${ref_modern}"
+        "${params.bwa_baseline}" index "${ref_modern}"
+        "${params.bwa_mem2}" index "${ref_modern}"
+
+        for rep in \$(seq 1 ${params.performance_repeats}); do
+          t=${params.modern_threads}
+          run_time neo.time "${params.bwa_neo}" mem -t "\$t" "${ref_modern}" modern_r1.fq modern_r2.fq > neo.sam
+          e=\$(parse_real neo.time); r=\$(parse_rss neo.time); [ -n "\$r" ] || r=-1; echo -e "modern\\tmem\\tneo\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$MREADS\\t\$MBASES\\tbwa mem pe" >> raw_metrics.tsv
+          [ "\$rep" -eq 1 ] && cp neo.sam neo_modern.sam
+
+          run_time base.time "${params.bwa_baseline}" mem -t "\$t" "${ref_modern}" modern_r1.fq modern_r2.fq > base.sam
+          e=\$(parse_real base.time); r=\$(parse_rss base.time); [ -n "\$r" ] || r=-1; echo -e "modern\\tmem\\tbaseline\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$MREADS\\t\$MBASES\\tbwa mem pe" >> raw_metrics.tsv
+          [ "\$rep" -eq 1 ] && cp base.sam baseline_modern.sam
+
+          run_time mem2.time "${params.bwa_mem2}" mem -t "\$t" "${ref_modern}" modern_r1.fq modern_r2.fq > mem2.sam
+          e=\$(parse_real mem2.time); r=\$(parse_rss mem2.time); [ -n "\$r" ] || r=-1; echo -e "modern\\tmem\\tmem2\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$MREADS\\t\$MBASES\\tbwa-mem2 mem pe" >> raw_metrics.tsv
+          [ "\$rep" -eq 1 ] && cp mem2.sam mem2_modern.sam
+        done
+
+        "${params.bwa_neo}" index "${ref_ancient}"
+        "${params.bwa_baseline}" index "${ref_ancient}"
+        for rep in \$(seq 1 ${params.performance_repeats}); do
+          for t in ${params.thread_grid}; do
+            run_time neo_se.time bash -lc "'${params.bwa_neo}' aln -t \$t '${ref_ancient}' ancient_merged.fq > n.sai && '${params.bwa_neo}' samse '${ref_ancient}' n.sai ancient_merged.fq > /dev/null"
+            e=\$(parse_real neo_se.time); r=\$(parse_rss neo_se.time); [ -n "\$r" ] || r=-1; echo -e "ancient\\taln_samse\\tneo\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$AREADS_M\\t\$ABASES_M\\tbwa aln+samse" >> raw_metrics.tsv
+
+            run_time base_se.time bash -lc "'${params.bwa_baseline}' aln -t \$t '${ref_ancient}' ancient_merged.fq > b.sai && '${params.bwa_baseline}' samse '${ref_ancient}' b.sai ancient_merged.fq > /dev/null"
+            e=\$(parse_real base_se.time); r=\$(parse_rss base_se.time); [ -n "\$r" ] || r=-1; echo -e "ancient\\taln_samse\\tbaseline\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$AREADS_M\\t\$ABASES_M\\tbwa aln+samse" >> raw_metrics.tsv
+
+            run_time neo_pe.time bash -lc "'${params.bwa_neo}' aln -t \$t '${ref_ancient}' ancient_r1.fq > n1.sai && '${params.bwa_neo}' aln -t \$t '${ref_ancient}' ancient_r2.fq > n2.sai && '${params.bwa_neo}' sampe '${ref_ancient}' n1.sai n2.sai ancient_r1.fq ancient_r2.fq > /dev/null"
+            e=\$(parse_real neo_pe.time); r=\$(parse_rss neo_pe.time); [ -n "\$r" ] || r=-1; echo -e "ancient\\taln_sampe\\tneo\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$AREADS_P\\t\$ABASES_P\\tbwa aln+sampe" >> raw_metrics.tsv
+
+            run_time base_pe.time bash -lc "'${params.bwa_baseline}' aln -t \$t '${ref_ancient}' ancient_r1.fq > b1.sai && '${params.bwa_baseline}' aln -t \$t '${ref_ancient}' ancient_r2.fq > b2.sai && '${params.bwa_baseline}' sampe '${ref_ancient}' b1.sai b2.sai ancient_r1.fq ancient_r2.fq > /dev/null"
+            e=\$(parse_real base_pe.time); r=\$(parse_rss base_pe.time); [ -n "\$r" ] || r=-1; echo -e "ancient\\taln_sampe\\tbaseline\\t\$t\\t\$rep\\t\$e\\t\$r\\t\$AREADS_P\\t\$ABASES_P\\tbwa aln+sampe" >> raw_metrics.tsv
+          done
+        done
+
+        awk 'BEGIN{FS=OFS="\\t"; print "dataset","mode","tool","threads","n","elapsed_mean_s","elapsed_sd_s","elapsed_min_s","elapsed_max_s","rss_mean_kb","rss_sd_kb","reads","bases"} NR>1{key=\$1 FS \$2 FS \$3 FS \$4; n[key]++; s[key]+=\$6; s2[key]+=(\$6*\$6); rs[key]+=\$7; rs2[key]+=(\$7*\$7); if(!(key in mi)||\$6<mi[key])mi[key]=\$6; if(!(key in ma)||\$6>ma[key])ma[key]=\$6; reads[key]=\$8; bases[key]=\$9;} END{for(k in n){m=s[k]/n[k]; v=(s2[k]/n[k])-(m*m); if(v<0)v=0; rm=rs[k]/n[k]; rv=(rs2[k]/n[k])-(rm*rm); if(rv<0)rv=0; split(k,p,FS); print p[1],p[2],p[3],p[4],n[k],m,sqrt(v),mi[k],ma[k],rm,sqrt(rv),reads[k],bases[k];}}' raw_metrics.tsv > summary_metrics.tsv
+        awk 'BEGIN{FS=OFS="\\t"; print "dataset","mode","tool","threads","elapsed_mean_s","speedup_vs_thread1"} NR>1{k=\$1 FS \$2 FS \$3; t=\$4; e=\$6; means[k FS t]=e; if(t==1) base[k]=e} END{for(mt in means){split(mt,a,FS); key=a[1] FS a[2] FS a[3]; b=base[key]; sp=(b>0)?b/means[mt]:0; print a[1],a[2],a[3],a[4],means[mt],sp}}' summary_metrics.tsv > speedup_metrics.tsv
+
+        norm() { awk 'BEGIN{FS=OFS="\\t"} !/^@/{print \$1,\$2,\$3,\$4,\$5,\$6,\$10,\$11}' "\$1" | sort; }
+        norm neo_modern.sam > neo.norm
+        norm baseline_modern.sam > baseline.norm
+        norm mem2_modern.sam > mem2.norm
+        d1=\$(diff -u neo.norm baseline.norm | awk 'END{print NR}')
+        d2=\$(diff -u neo.norm mem2.norm | awk 'END{print NR}')
+        echo -e "comparison\\tdiff_lines" > modern_mem_parity.tsv
+        echo -e "neo_vs_baseline\\t${d1:-0}" >> modern_mem_parity.tsv
+        echo -e "neo_vs_mem2\\t${d2:-0}" >> modern_mem_parity.tsv
         """
 }
 
 workflow {
     def refModern = file(params.ref_fa, checkIfExists: true)
     def refAncient = file(params.ref_pe_fa, checkIfExists: true)
-
-    GENERATE_SYNTHETIC_DATASETS(refModern, refAncient)
-
-    def modernReads = GENERATE_SYNTHETIC_DATASETS.out.map { m, a, r1, r2 -> m }
-    def ancientSe = GENERATE_SYNTHETIC_DATASETS.out.map { m, a, r1, r2 -> a }
-    def ancientPeR1 = GENERATE_SYNTHETIC_DATASETS.out.map { m, a, r1, r2 -> r1 }
-    def ancientPeR2 = GENERATE_SYNTHETIC_DATASETS.out.map { m, a, r1, r2 -> r2 }
-
-    def modernTools = Channel.of(
-        [tool: 'neo', bin: params.bwa_neo],
-        [tool: 'baseline', bin: params.bwa_baseline],
-        [tool: 'mem2', bin: params.bwa_mem2]
-    )
-    def ancientTools = Channel.of(
-        [tool: 'neo', bin: params.bwa_neo],
-        [tool: 'baseline', bin: params.bwa_baseline]
-    )
-
-    CAPTURE_VERSION(modernTools)
-
-    MODERN_MEM_BENCH(modernTools, Channel.value(refModern), modernReads)
-    ANCIENT_ALN_BENCH(ancientTools, Channel.value(refAncient), ancientSe, ancientPeR1, ancientPeR2)
-
-    def metricFiles = MODERN_MEM_BENCH.out.mix(ANCIENT_ALN_BENCH.out).collect()
-    AGGREGATE_METRICS(metricFiles)
-    PLOT_METRICS(AGGREGATE_METRICS.out.raw, AGGREGATE_METRICS.out.summary, AGGREGATE_METRICS.out.speedup)
-
-    def manifest = [
-        schema: 'bwa-neo-publication-local-v2',
-        generated_utc: java.time.Instant.now().toString(),
-        modern_reads_n: params.modern_reads_n,
-        ancient_reads_n: params.ancient_reads_n,
-        thread_grid: params.thread_grid.toString().split(' '),
-        performance_repeats: params.performance_repeats,
-        binaries: [
-            bwa_neo: params.bwa_neo,
-            bwa_baseline: params.bwa_baseline,
-            bwa_mem2: params.bwa_mem2
-        ],
-        outputs: [
-            raw_metrics: "${params.outdir}/perf/raw_metrics.tsv",
-            summary_metrics: "${params.outdir}/perf/summary_metrics.tsv",
-            speedup_metrics: "${params.outdir}/perf/speedup_metrics.tsv",
-            plots_dir: "${params.outdir}/plot"
-        ]
-    ]
-    PUBLICATION_MANIFEST(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)))
+    RUN_PUBLICATION_BENCH(refModern, refAncient)
 }

@@ -1,0 +1,544 @@
+#!/usr/bin/env python3
+import numpy
+import os
+import enum
+import sys
+import json
+import gzip
+from Bio import SeqIO
+from Bio.Seq import MutableSeq, Seq
+from Bio import __version__ as BIOPY_VERSION
+
+RNG = None
+
+
+class FragmentType(enum.Enum):
+    THREE_PRIME = enum.auto()
+    FIVE_PRIME = enum.auto()
+
+    def __str__(self):
+        if self == FragmentType.THREE_PRIME:
+            return "THREE_PRIME"
+        if self == FragmentType.FIVE_PRIME:
+            return "FIVE_PRIME"
+
+
+class Strand(enum.Enum):
+    POSITIVE = enum.auto()
+    NEGATIVE = enum.auto()
+
+
+class DnaNick:
+
+    def __init__(self, index, strand=Strand.POSITIVE):
+        self._index = index
+        self._strand = strand
+
+    def index(self):
+        return self._index
+
+    def __str__(self):
+        return f"(index: {self._index})"
+
+    def __repr__(self):
+        return str(self)
+
+
+class SiteDamage:
+
+    def __init__(self, index, old_char, new_char):
+        self._relative_index = index
+        self._old_character = old_char
+        self._new_character = new_char
+
+    def apply_to_seq(self, mutseq):
+        if mutseq[self._relative_index] == self._old_character:
+            mutseq[self._relative_index] = self._new_character
+        else:
+            raise RuntimeError(
+                f"The old character ({self._old_character}) did not match the"
+                "actual character ({mutseq[self._relative_index]})"
+            )
+
+    def to_dict(self):
+        return {
+            "index": int(self._relative_index),
+            "old": self._old_character,
+            "new": self._new_character
+        }
+
+    def __str__(self):
+        return f"(index: {self._relative_index}, old: {self._old_character}, "
+        "new: {self._new_character})"
+
+    def __dict__(self):
+        return self.to_dict()
+
+
+class AdnaFragment:
+
+    def __init__(self, sequence, start, end, taxa_name):
+        self._start_index = start
+        self._end_index = end
+        self._sequence = sequence[self._start_index:self._end_index]
+        self._taxa_name = taxa_name
+        self._damage = []
+        self._valid = None
+        self._type = RNG.choice([FragmentType.THREE_PRIME,
+                                 FragmentType.FIVE_PRIME], 1)[0]
+        self._filtered = False
+        self._replicate = None
+
+    @property
+    def taxa_name(self):
+        return self._taxa_name
+
+    @property
+    def annotated_taxa_name(self):
+        return (f"{self.taxa_name}_{self.start_index}"
+                f"-{self.end_index}-{self.replicate}")
+
+    @property
+    def replicate(self):
+        return self._replicate
+
+    @replicate.setter
+    def replicate(self, i: int):
+        self._replicate = i
+
+    @property
+    def left_overhang(self):
+        return self._overhang_left_len
+
+    @left_overhang.setter
+    def left_overhang(self, length):
+        if length > len(self._sequence):
+            raise RuntimeError("Overhang is too long")
+        self._overhang_left_len = length
+
+    @property
+    def right_overhang(self):
+        return self._overhang_right_len
+
+    @right_overhang.setter
+    def right_overhang(self, length):
+        if length > len(self._sequence):
+            raise RuntimeError("Overhang is too long")
+        self._overhang_right_len = length
+
+    @property
+    def right_overhang_start_index(self):
+        return len(self) - self.right_overhang
+
+    @property
+    def valid(self):
+        if self._valid is None:
+            self._valid = self._has_informative_characters()
+        return self._valid
+
+    @property
+    def start_index(self):
+        return self._start_index
+
+    @property
+    def end_index(self):
+        return self._end_index
+
+    @property
+    def filtered(self):
+        return self._filtered
+
+    @filtered.setter
+    def filtered(self, f: bool):
+        self._filtered = f
+
+    def __iter__(self):
+        return iter(self._sequence)
+
+    def __len__(self):
+        return len(self._sequence)
+
+    def key(self):
+        return (self.taxa_name, self.start_index, self.end_index)
+
+    def add_damage(self, damage):
+        self._damage.append(damage)
+
+    def _to_sequence_mut(self):
+        mut_seq = MutableSeq(str(self._sequence))
+        for d in self._damage:
+            d.apply_to_seq(mut_seq)
+        return mut_seq
+
+    def to_sequence(self, ungap=False):
+        tmp_seq = Seq(str(self._to_sequence_mut()))
+        if ungap:
+            tmp_seq = remove_gaps(tmp_seq)
+        return tmp_seq
+
+    def to_aligned_sequence(self, sequence_length):
+        mut_seq = self._to_sequence_mut()
+        tmp_str = str(('-' * self._start_index) + mut_seq +
+                      ('-' * (sequence_length -
+                              (len(mut_seq) + self._start_index))))
+        if len(tmp_str) != sequence_length:
+            raise RuntimeError("The aligned sequence length is the wrong size")
+        return Seq(tmp_str)
+
+    def __str__(self):
+        return (f"(start: {self._start_index}, "
+                f"end: {self._end_index}, "
+                f"left overhang: {self._overhang_left_len}, "
+                f"right overhang: {self._overhang_right_len}, "
+                f"frag type: {self._type}, "
+                f"filtered: {self.filtered})"
+                )
+
+    def __repr__(self):
+        return self.__str__()
+
+    def add_overhang(self, overhang_length_param):
+        sequence_len = len(self._sequence)
+
+        if sequence_len == 0:
+            self.left_overhang = 0
+            self.right_overhang = 0
+            return
+
+        left_overhang_len = 0
+        right_overhang_len = 0
+
+        overhang_length = numpy.clip(
+            RNG.geometric(overhang_length_param) - 1, 0, sequence_len)
+
+        if self._type == FragmentType.FIVE_PRIME:
+            left_overhang_len = overhang_length
+        else:
+            right_overhang_len = overhang_length
+
+        self.left_overhang = left_overhang_len
+        self.right_overhang = right_overhang_len
+        if (self.right_overhang + self.left_overhang) > sequence_len:
+            raise RuntimeError("Overhangs cannot be longer than the fragment")
+
+    def _roll_damage(self, index, seq_char, test_char, damage_char, rate):
+        if seq_char.lower() == test_char.lower():
+            if RNG.uniform() < rate:
+                tmp_damage = SiteDamage(index, seq_char, damage_char)
+                self.add_damage(tmp_damage)
+
+    def _add_c_to_t_damage(self, single_strand_rate, double_strand_rate):
+        for i, c in enumerate(self._sequence[:self.left_overhang]):
+            self._roll_damage(i, c, 'C', 'T', single_strand_rate)
+
+        for i, c in enumerate(self._sequence[self.left_overhang:],
+                              start=self.left_overhang):
+            self._roll_damage(i, c, 'C', 'T', double_strand_rate)
+
+    def _add_a_to_g_damage(self, single_strand_rate, double_strand_rate):
+        for i, c in enumerate(
+                self._sequence[:self.right_overhang_start_index]):
+            self._roll_damage(i, c, 'A', 'G', double_strand_rate)
+
+        for i, c in enumerate(self._sequence[self.right_overhang_start_index:],
+                              start=self.right_overhang_start_index):
+            self._roll_damage(i, c, 'A', 'G', single_strand_rate)
+
+    def _has_informative_characters(self):
+        for c in self._sequence:
+            if is_informative_char(c):
+                return True
+        return False
+
+    def add_deaminations(self, single_strand_rate, double_strand_rate):
+        # add left overhand damage
+        if self._type == FragmentType.FIVE_PRIME:
+            self._add_c_to_t_damage(single_strand_rate, double_strand_rate)
+        else:
+            self._add_a_to_g_damage(single_strand_rate, double_strand_rate)
+
+    def to_dict(self):
+        obj_dict = {
+            "start": int(self._start_index),
+            "end": int(self._end_index),
+            "taxa": self._taxa_name,
+            "damage": [d.to_dict() for d in self._damage],
+            "overhang_l_len": int(self.left_overhang),
+            "overhang_r_len": int(self.right_overhang),
+            "type": str(self._type),
+            "filtered": self.filtered,
+        }
+        return obj_dict
+
+    def ungap(self):
+        self._sequence = self._sequence.ungap()
+
+    def __dict__(self):
+        return self.to_dict()
+
+    def to_informative_mask(self):
+        func = numpy.vectorize(is_informative_char)
+        return func(self._sequence)
+
+
+def is_informative_char(c):
+    if c == 'N' or c == '-' or c == 'n' or c == '?':
+        return False
+    return True
+
+# def produce_nicks(sequence, nick_freq):
+#    nicks = [DnaNick(0)]
+#    if nick_freq == 0.0:
+#        nicks.append(DnaNick(len(sequence)))
+#        return nicks
+#
+#    current = 0
+#    total = len(sequence)
+#    while current < total:
+#        n = numpy.clip(RNG.geometric(nick_freq), 0, total-current)
+#        current += n
+#        nicks.append(DnaNick(current))
+#    return nicks
+
+
+def produce_nicks(sequence, nick_freq):
+    nicks = [DnaNick(0)]
+    for i, _ in enumerate(sequence, start=1):
+        if RNG.uniform() < nick_freq:
+            nicks.append(DnaNick(i))
+        # if nicks[-1].index != len(sequence):
+    nicks.append(DnaNick(len(sequence)))
+    return nicks
+
+
+def produce_fragments(nicks, sequence, taxa_name):
+    fragments = []
+
+    for n1, n2 in zip(nicks, nicks[1:]):
+        if n1.index == n2.index:
+            print(n1, n2)
+        fragments.append(
+            AdnaFragment(sequence, n1.index(), n2.index(), taxa_name))
+
+    return fragments
+
+
+def filter_fragments(frags, reference=None, min_len=0):
+    for frag in frags:
+        if not frag.valid:
+            frag.filtered = True
+            continue
+        if len(frag.to_sequence(ungap=True)) < min_len:
+            frag.filtered = True
+            continue
+        if reference is not None and not reference.check_fragment(frag):
+            frag.filtered = True
+            continue
+    return frags
+
+
+def assign_replicates(frags):
+    frag_set = {}
+    for f in frags:
+        if f.filtered:
+            continue
+        f_key = f.key()
+        if f_key not in frag_set:
+            frag_set[f_key] = 0
+        f.replicate = frag_set[f_key]
+        frag_set[f_key] += 1
+
+
+def write_frags_to_fasta_file(frags, filename, align, ungap, compress,
+                              format_taxa_name):
+    assign_replicates(frags)
+    fastafile = None
+    if compress:
+        filename_ext = os.path.splitext(filename)[1]
+        if (filename_ext == '.gz' or filename_ext == ".gzip"):
+            filename += '.gz'
+        fastafile = gzip.GzipFile(filename, 'a')
+    else:
+        fastafile = open(filename, 'a')
+
+    for f in frags:
+        if f.filtered:
+            continue
+        taxa_line = None
+        if format_taxa_name:
+            taxa_line = ">" + f.annotated_taxa_name + "\n"
+        else:
+            taxa_line = ">" + f.taxa_name + "\n"
+
+        sequence_line = None
+        if align:
+            sequence_line =\
+                str(f.to_aligned_sequence(len(sequence))) + "\n"
+        else:
+            sequence_line =\
+                str(f.to_sequence(ungap=ungap)) + "\n"
+        if compress:
+            taxa_line = taxa_line.encode('utf-8')
+            sequence_line = sequence_line.encode('utf-8')
+
+        fastafile.write(taxa_line)
+        fastafile.write(sequence_line)
+
+
+class PremaskedReferenceAlignment:
+
+    def __init__(self, reference):
+        self._masked_sequence = []
+        self._construct_premask(reference)
+
+    def _extend(self, new_len):
+        self._masked_sequence = self._masked_sequence + [True] * (new_len -
+                                                                  len(self))
+
+    def __len__(self):
+        return len(self._masked_sequence)
+
+    def _construct_premask(self, reference):
+        for alignment in reference:
+            if len(self) < len(alignment):
+                self._extend(len(alignment))
+            for i, c in enumerate(alignment):
+                self._masked_sequence[i] &= is_informative_char(c)
+        self._masked_sequence = numpy.array(self._masked_sequence)
+
+    def check_fragment(self, fragment: AdnaFragment):
+        frag_mask = fragment.to_informative_mask()
+        res = frag_mask & self._masked_sequence[fragment.start_index:fragment.
+                                                end_index]
+        return res.any()
+
+    def valid(self):
+        return self._masked_sequence.any()
+
+
+def remove_gaps(seq):
+    if int(BIOPY_VERSION.split('.')[1]) <= 79:
+        seq = seq.ungap('-')
+    else:
+        seq = seq.replace('-', "")
+    return seq
+
+
+def count_unfiltered_frags(frag_list):
+    return numpy.sum([0 if f.filtered else 1 for f in frag_list])
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fasta", type=str, required=True)
+    parser.add_argument("--nick-freq", "--nf", type=float, required=True)
+    parser.add_argument("--overhang-parameter",
+                        "--overhang",
+                        type=float,
+                        required=True)
+    parser.add_argument("--min-length", type=int, required=False, default=0)
+    parser.add_argument("--min-fragments", type=int, required=False, default=1)
+    parser.add_argument("--max-fragments", type=int, required=False)
+
+    parser.add_argument("--double-strand-deamination",
+                        "--ds",
+                        type=float,
+                        required=True)
+    parser.add_argument("--single-strand-deamination",
+                        "--ss",
+                        type=float,
+                        required=True)
+
+    parser.add_argument("--align", action="store_true", default=False)
+    parser.add_argument("--format-taxa-name",
+                        action="store_true",
+                        default=False)
+    parser.add_argument("--compress", action="store_true", default=False)
+    parser.add_argument("--ungap", action="store_true", default=False)
+    parser.add_argument("--output", type=str, required=True)
+    parser.add_argument("--log", type=str, required=True)
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--reference", type=str)
+    args = parser.parse_args()
+
+    alignment = SeqIO.parse(open(args.fasta), 'fasta')
+    reference = None
+    if args.reference is not None:
+        reference = PremaskedReferenceAlignment(
+            SeqIO.parse(open(args.reference), 'fasta'))
+        if not reference.valid():
+            print(
+                "reference was passed, but there is no common column"
+                " in the reference"
+            )
+            sys.exit(1)
+
+    if os.path.exists(args.output):
+        print("Output file exists, refusing to overwrite the output file")
+        sys.exit(1)
+
+    output_ext = os.path.splitext(args.output)[1].lower()
+    if args.compress and not (output_ext == '.gz' or output_ext == ".gzip"):
+        args.output += ".gz"
+
+    if args.align and args.ungap:
+        print(
+            "Refusing to align and ungap the sequence. "
+            "These flags are incompatable"
+        )
+        sys.exit(1)
+
+    if args.seed is not None:
+        seed = numpy.random.SeedSequence(args.seed)
+    else:
+        seed = numpy.random.SeedSequence()
+
+    RNG = numpy.random.default_rng(seed)
+
+    all_frags = []
+    with gzip.GzipFile(args.log + '.gz', 'w') as logfile:
+        for sequence in alignment:
+            total_fragments = 0
+            frag_list = []
+
+            while True:
+                nicks = produce_nicks(sequence.seq, args.nick_freq)
+                frags = produce_fragments(nicks, sequence.seq, sequence.id)
+                for frag in frags:
+                    frag.add_overhang(args.overhang_parameter)
+                    frag.add_deaminations(args.single_strand_deamination,
+                                          args.double_strand_deamination)
+                frags = filter_fragments(frags, reference, args.min_length)
+                frag_list.extend(frags)
+                new_frags = count_unfiltered_frags(frag_list)
+                if new_frags >= args.min_fragments:
+                    total_fragments += new_frags
+                    break
+
+            while (args.max_fragments is not None
+                   and total_fragments > args.max_fragments):
+                index = RNG.integers(0, len(frag_list))
+                if frag_list[index].filtered:
+                    continue
+                frag_list[index].filtered = True
+                total_fragments -= 1
+
+            write_frags_to_fasta_file(frag_list, args.output, args.align,
+                                      args.ungap, args.compress,
+                                      args.format_taxa_name)
+            all_frags.append({
+                "taxa": sequence.description,
+                "fragments": [f.to_dict() for f in frag_list],
+            })
+        logfile.write(json.dumps(all_frags, indent=1).encode('utf-8'))
+    with open(args.log, 'w') as logfile:
+        params = {
+            'ov': args.overhang_parameter,
+            'nf': args.nick_freq,
+            'ss': args.single_strand_deamination,
+            'ds': args.double_strand_deamination,
+            'seed': seed.entropy,
+        }
+        json.dump(params, logfile)
