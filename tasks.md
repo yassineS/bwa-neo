@@ -37,9 +37,9 @@
 
 ## Refbias benchmarks
 
-- [x] `benchmarks/refbias/README.md` + `Makefile` smoke target
-- [x] `benchmarks/at_scale/` — design doc + Nextflow stub for scale parity vs lh3/bwa and bwa-mem2 (see README)
-- [ ] Implement full Nextflow workflow (fetch, index, diff, hyperfine, plots)
+- [x] `benchmarks/refbias/README.md` — pointers to Dolenz et al. / Zenodo; smoke runs via **`benchmarks/at_scale`** (Pixi + Nextflow, no Makefile under `benchmarks/`)
+- [x] `benchmarks/at_scale/` — Nextflow tiny-fixture pipeline: threaded `aln` + neo `samse -t`, `sampe`, optional conda-`bwa` first-11 parity, samse thread self-test, `publication_manifest.json`
+- [ ] Extend Nextflow (Zenodo fetch, hyperfine, plots, simulation tracks)
 - [ ] Download Zenodo 14234666 assets via scripted checksum
 - [ ] Nightly full benchmark job (optional)
 

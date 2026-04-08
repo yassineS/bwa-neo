@@ -57,19 +57,27 @@ Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenod
 
 Scripts should live under `benchmarks/at_scale/plot/` and read only generated TSV/CSV.
 
-## Running (once Nextflow workflow is implemented)
+## Running (Pixi + Nextflow)
+
+All benchmark **drivers** for this tree are **Nextflow**; dependencies and tasks are in **`pixi.toml`** (no Makefile under `benchmarks/`).
 
 ```bash
-cd benchmarks/at_scale/nextflow
-nextflow run main.nf \
-  -profile docker \
-  --outdir results \
-  --bwa_neo /path/to/bwa-neo/bwa \
-  --bwa_baseline /path/to/lh3-bwa/bwa \
-  --bwa_mem2 /path/to/bwa-mem2/bwa-mem2
+cd benchmarks/at_scale
+pixi install
+pixi run bench-neo-only   # neo only; threaded aln + samse -t + sampe + samse self-test + manifest
+pixi run bench            # + conda `bwa` baseline, SE/PE first-11 parity, `publication` profile (threads 4)
 ```
 
-Profiles: `standard` (local), `slurm` or `awsbatch` for HPC/cloud.
+Override binaries (advanced):
+
+```bash
+export BWA_NEO=/path/to/bwa-neo
+export BWA_BASELINE=/path/to/bwa
+pixi run -- nextflow run nextflow/main.nf -profile standard,publication \
+  --bwa_neo "$BWA_NEO" --bwa_baseline "$BWA_BASELINE" --outdir nextflow/custom_out
+```
+
+Profiles: compose **`standard`** with **`publication`** (baseline + higher thread counts) or **`neo_only`** (no baseline).
 
 ## Tiers
 
@@ -80,5 +88,5 @@ Profiles: `standard` (local), `slurm` or `awsbatch` for HPC/cloud.
 
 ## Related
 
-- `benchmarks/refbias/` — Makefile smoke and Zenodo pointer
+- `benchmarks/refbias/` — Zenodo / refbias context (execution is Nextflow in this tree)
 - `tests/golden_sam.sh` — small deterministic SAM check

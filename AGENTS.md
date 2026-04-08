@@ -73,7 +73,7 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 - **Keep** `aln` / `samse` / `sampe` strong (ancient DNA / short reads).
 - **Parallelism:** `bwa aln -t` (upstream); `**bwa samse -t`** (bwa-neo) for pac_pos batching.
 - **Future:** merge **bwa-mem2** for `mem` (`tasks.md`, `design.md`) — not finished.
-- **Benchmarks:** Dolenz et al. / refbias / Zenodo — see `benchmarks/refbias/README.md`.
+- **Benchmarks:** Dolenz et al. / refbias / Zenodo — context in `benchmarks/refbias/README.md`; runnable Nextflow smoke in `benchmarks/at_scale/` (`pixi run bench` / `bench-neo-only`).
 
 ## 8. CI
 
