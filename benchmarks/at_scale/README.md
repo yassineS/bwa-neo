@@ -70,7 +70,7 @@ cd benchmarks/at_scale
 pixi install
 pixi run bench-neo-only   # neo only; threaded aln + samse -t + sampe + samse self-test + manifest
 pixi run bench            # + conda `bwa` baseline, SE/PE first-11 parity, `publication` profile (threads 4)
-pixi run bench-publication-local  # local publication-scale profile with 1M-read modern (ART) + aDNA (PyGargammel) runs
+pixi run bench-publication-local  # local publication-scale profile with 1M-read modern (InSilicoSeq) + aDNA (PyGargammel) runs
 ```
 
 Override binaries (advanced):
@@ -89,23 +89,28 @@ Profiles: compose `**standard**` with `**publication**` (baseline + higher threa
 - `nextflow/results_publication_local/perf/raw_metrics.tsv`
 - `nextflow/results_publication_local/perf/summary_metrics.tsv`
 - `nextflow/results_publication_local/perf/speedup_metrics.tsv`
-- `nextflow/results_publication_local/publication_manifest.json`
-- `nextflow/results_publication_local/plot/*.pdf|*.svg|*.png` (generated inside the Nextflow pipeline; modern and ancient panels are rendered separately)
+- `nextflow/results_publication_local/plot/runtime_by_mode.{pdf,svg,png}`
+- `nextflow/results_publication_local/plot/ancient_speedup_curve.{pdf,svg,png}`
+- `nextflow/results_publication_local/plot/memory_by_mode.{pdf,svg,png}`
+- `nextflow/results_publication_local/tables/table_modern_runtime.{tsv,md}`
+- `nextflow/results_publication_local/tables/table_ancient_scaling.{tsv,md}`
+- `nextflow/results_publication_local/tables/table_modern_parity.{tsv,md}`
 
 Local publication run includes:
 
-- Modern DNA (`1,000,000` paired-end reads): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`, fixed at 4 threads.
+- Modern DNA (`1,000,000` paired-end reads, InSilicoSeq): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`, fixed at 4 threads.
 - Modern parity report: normalized SAM comparison in `parity/modern_mem_parity.tsv`.
-- Ancient DNA (`1,000,000` reads): merged/collapsed-like reads run with `aln+samse`; unmerged paired reads run with `aln+sampe`.
-- Preferred aDNA simulation path is in-pipeline via `pygargammel` (managed by Pixi). You can still override inputs with external FASTQs via `--ancient_merged_fq`, `--ancient_r1_fq`, `--ancient_r2_fq`.
+- Ancient DNA (`1,000,000` paired-end reads, PyGargammel-damaged): explicit read collapse/merge step is run first, then merged reads run with `aln+samse`; unmerged paired reads run with `aln+sampe`.
+- Preferred aDNA simulation path is in-pipeline via `pygargammel` and merged-read generation is performed in-pipeline (AdapterRemoval). You can still override inputs with external FASTQs via `--ancient_merged_fq`, `--ancient_r1_fq`, `--ancient_r2_fq`.
 - Optional Zenodo download override is still supported via:
   - `--use_zenodo_adna true`
   - `--zenodo_record 14234666`
   - `--zenodo_merged_name <file_in_record>`
   - `--zenodo_r1_name <file_in_record>`
   - `--zenodo_r2_name <file_in_record>`
-- Thread scaling for ancient ALN: `1, 2, 4, 6, 8` with speedup table in `perf/speedup_metrics.tsv`.
-- Resource isolation: Nextflow is configured with `process.maxForks = 1` (one job at a time) to reduce machine contention bias.
+- Thread scaling for ancient ALN: `1, 2, 4, 6, 8` with speedup table in `perf/ancient_speedup_metrics.tsv` (and full table in `perf/speedup_metrics.tsv`).
+- Resource isolation: Nextflow is configured with `process.maxForks = 1` and `executor.queueSize = 1` (one queued job at a time) to reduce machine contention bias.
+- Publication assets are generated in-pipeline from TSV outputs (no manual plotting step required).
 
 Memory notes:
 
