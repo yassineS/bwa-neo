@@ -1,6 +1,6 @@
 # Contributing to bwa-neo
 
-Read **`requirements.md`**, **`design.md`**, and **`tasks.md`** before large changes. For **AI agents** or workspace setup, read **[`AGENTS.md`](AGENTS.md)** first.
+Read **`docs/requirements.md`**, **`docs/design.md`**, and **`docs/tasks.md`** before large changes. For **AI agents** or workspace setup, read **[`AGENTS.md`](AGENTS.md)** first.
 
 **Repository location:** clone and work only under **`~/Code/bwa-neo`**—open that path as the workspace root; do not use the home directory as the project root for bwa-neo.
 
@@ -19,7 +19,7 @@ If this tree was imported without `.git`, run `./scripts/init-git.sh` locally, t
 
 1. Describe behaviour change vs BWA / bwa-mem2 compatibility.
 2. Add or update tests (`tests/`, CI smoke).
-3. Update `CHANGELOG.md` and **`tasks.md`** checkboxes when completing a tracked item.
+3. Update `CHANGELOG.md` and **`docs/tasks.md`** checkboxes when completing a tracked item.
 
 ## Code style
 

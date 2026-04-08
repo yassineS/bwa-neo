@@ -81,6 +81,8 @@ target_link_libraries(bwa PRIVATE bwa_core m z pthread ${BWA_NEO_EXTRA_LIBS})
 
 include(GNUInstallDirs)
 install(TARGETS bwa RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/man/bwa.1"
+        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
 
 include(CTest)
 if(BUILD_TESTING)

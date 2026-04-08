@@ -79,9 +79,9 @@ static int usage()
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Aux:     xa2multi      expand XA:Z supplementary hits (stdin SAM)\n");
 	fprintf(stderr, "         qualfa2fq     convert FASTA + numeric QUAL to FASTQ\n");
-	fprintf(stderr, "         postalt       ALT-aware SAM postprocess (see stderr; full port pending)\n");
+	fprintf(stderr, "         postalt       ALT companion SAM stream (see stderr; liftover parity pending)\n");
 	fprintf(stderr, "         typehla-selctg select contigs for HLA typing (BED + SAM.gz)\n");
-	fprintf(stderr, "         typehla       HLA genotyping from exon alignment (full port pending)\n");
+	fprintf(stderr, "         typehla       HLA genotyping placeholder (reads SAM.gz; GT output not yet in C)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr,
 "Note: To use BWA, you need to first index the genome with `bwa index'.\n"

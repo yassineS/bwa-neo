@@ -3,7 +3,7 @@
 [![GitHub Downloads](https://img.shields.io/github/downloads/lh3/bwa/total.svg?style=flat&label=GitHub%20downloads)](https://github.com/lh3/bwa/releases)
 [![BioConda Install](https://img.shields.io/conda/dn/bioconda/bwa.svg?style=flag&label=BioConda%20install)](https://anaconda.org/bioconda/bwa)
 
-> **bwa-neo note:** This fork is primarily an **agentic-programming experiment** to refactor BWA, speed up and parallelize `bwa aln` and `samse`/`sampe`, and progressively uniformize BWA-MEM and bwa-mem2 codebases. For production workflows, prefer upstream [`lh3/bwa`](https://github.com/lh3/bwa) and [`bwa-mem2`](https://github.com/bwa-mem2/bwa-mem2).
+> **bwa-neo note:** This fork is primarily an **agentic-programming experiment** to refactor BWA, speed up and parallelize `bwa aln` and `samse`/`sampe`, and progressively uniformize BWA-MEM and bwa-mem2 codebases. For production workflows, prefer upstream [`lh3/bwa`](https://github.com/lh3/bwa) and [`bwa-mem2`](https://github.com/bwa-mem2/bwa-mem2). Fork-oriented docs: [`docs/BWA-NEO.md`](docs/BWA-NEO.md). Man page (troff): [`man/bwa.1`](man/bwa.1).
 
 **Note: [minimap2][minimap2] has replaced BWA-MEM for __PacBio and Nanopore__ read
 alignment.** It retains all major BWA-MEM features, but is ~50 times as fast,
@@ -153,7 +153,7 @@ as well. BWA-MEM does not have this problem.
 
 Yes, since 0.7.11, BWA-MEM officially supports mapping to GRCh38+ALT.
 BWA-backtrack and BWA-SW don't properly support ALT mapping as of now. Please
-see [README-alt.md][18] for details. Briefly, it is recommended to use
+see [`docs/README-alt.md`][18] (same text as [upstream][19]) for details. Briefly, it is recommended to use
 [bwakit][17], the binary release of BWA, for generating the reference genome
 and for mapping.
 
@@ -194,4 +194,5 @@ use samtools [collate+fastq][remap] instead.
 [15]: https://github.com/lh3/bwa/tree/mem
 [16]: ftp://ftp.ncbi.nlm.nih.gov/genbank/genomes/Eukaryotes/vertebrates_mammals/Homo_sapiens/GRCh38/seqs_for_alignment_pipelines/
 [17]: http://sourceforge.net/projects/bio-bwa/files/bwakit/
-[18]: https://github.com/lh3/bwa/blob/master/README-alt.md
+[18]: docs/README-alt.md
+[19]: https://github.com/lh3/bwa/blob/master/README-alt.md

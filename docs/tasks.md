@@ -4,7 +4,7 @@
 
 - [x] **`AGENTS.md`** — pointers for agents (workspace path, build, test, Git, layout)
 - [x] Import lh3/bwa sources under `~/Code/bwa-neo`
-- [x] Add `requirements.md`, `design.md`, `tasks.md`
+- [x] Add `docs/requirements.md`, `docs/design.md`, `docs/tasks.md` (planning docs live under `docs/`)
 - [x] Add CMake build; keep Makefile
 - [x] Add `CONTRIBUTING.md`, `SECURITY.md`, `MAINTAINERS.md`
 - [x] `scripts/bootstrap-git.sh` (+ `init-git.sh` wrapper) and **`docs/DEVELOPMENT.md`** (branching, commits)
@@ -37,9 +37,9 @@
 
 ## Refbias benchmarks
 
-- [x] `benchmarks/refbias/README.md` + `Makefile` smoke target
-- [x] `benchmarks/at_scale/` — design doc + Nextflow stub for scale parity vs lh3/bwa and bwa-mem2 (see README)
-- [ ] Implement full Nextflow workflow (fetch, index, diff, hyperfine, plots)
+- [x] `benchmarks/refbias/README.md` — pointers to Dolenz et al. / Zenodo; smoke runs via **`benchmarks/at_scale`** (Pixi + Nextflow, no Makefile under `benchmarks/`)
+- [x] `benchmarks/at_scale/` — Nextflow tiny-fixture pipeline: threaded `aln` + neo `samse -t`, `sampe`, optional conda-`bwa` first-11 parity, samse thread self-test, `publication_manifest.json`
+- [ ] Extend Nextflow (Zenodo fetch, hyperfine, plots, simulation tracks)
 - [ ] Download Zenodo 14234666 assets via scripted checksum
 - [ ] Nightly full benchmark job (optional)
 

@@ -72,6 +72,11 @@ information about ALT hits.
 
 #### Step 2: Postprocessing
 
+In **bwa-neo**, run `bwa postalt` (see `bwa postalt -v` and stderr): it streams
+the alignment SAM after reading the ALT file; full liftover / mapQ logic matching
+historical `bwa-postalt.js` is not yet implemented. Upstream documentation below
+refers to the original K8 script.
+
 Postprocessing is done with a separate script `bwa-postalt.js`. It reads all
 potential hits reported in the XA tag, lifts ALT hits to the chromosomal
 positions using the ALT-to-ref alignment, groups them based on overlaps between

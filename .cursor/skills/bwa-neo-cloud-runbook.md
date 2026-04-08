@@ -96,7 +96,7 @@ tests/golden_sampe.sh ./bwa
 ### 4. `benchmarks/refbias/` — benchmark workflow skeleton
 
 - **Not** part of the default `ctest` suite.
-- **Quick smoke (after `bwa` exists):** from repo root, `make -j` then `make -C benchmarks/refbias smoke` (uses `bwa` at repo root or `BWA=/path/to/bwa`).
+- **Quick smoke:** `cd benchmarks/at_scale && pixi install && pixi run bench-neo-only` (builds bwa-neo with CMake, runs Nextflow on tiny fixtures). Full parity vs conda `bwa`: `pixi run bench`.
 - Full Zenodo-scale reproduction is **manual / HPC**; see `benchmarks/refbias/README.md`.
 
 ### 5. `scripts/`, `docs/`, `third_party/`

@@ -160,7 +160,10 @@ if (-f "$ARGV[0].alt" && !defined($opts{P})) {
 	}
 	close($fh);
 	my $hla_pre = $has_hla? "-p $prefix.hla " : "";
-	$cmd .= "  | $root/k8 $root/bwa-postalt.js $hla_pre$ARGV[0].alt \\\n";
+	my $bwa_here = "$root/bwa";
+	my $bwa_up = "$root/../bwa";
+	my $bwa_bin = (-x $bwa_here) ? $bwa_here : ((-x $bwa_up) ? $bwa_up : $bwa_here);
+	$cmd .= "  | $bwa_bin postalt $hla_pre$ARGV[0].alt \\\n";
 }
 
 my $t_sort = $opts{t} < 4? $opts{t} : 4;

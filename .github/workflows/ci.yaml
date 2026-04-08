@@ -33,6 +33,9 @@ jobs:
       - name: Golden SAMPE regression
         run: chmod +x tests/golden_sampe.sh && tests/golden_sampe.sh ./bwa
 
+      - name: CLI aux (qualfa2fq, xa2multi, postalt, typehla*)
+        run: chmod +x tests/cli_aux.sh && tests/cli_aux.sh ./bwa
+
   build-cmake:
     runs-on: ubuntu-latest
     strategy:
@@ -85,3 +88,15 @@ jobs:
 
       - name: Compile with Make (${{ matrix.compiler }})
         run: make CC=${{ matrix.compiler }}
+
+      - name: Smoke test (bash)
+        run: chmod +x tests/smoke_align.sh && tests/smoke_align.sh ./bwa
+
+      - name: Golden SAM regression
+        run: chmod +x tests/golden_sam.sh && tests/golden_sam.sh ./bwa
+
+      - name: Golden SAMPE regression
+        run: chmod +x tests/golden_sampe.sh && tests/golden_sampe.sh ./bwa
+
+      - name: CLI aux (qualfa2fq, xa2multi, postalt, typehla*)
+        run: chmod +x tests/cli_aux.sh && tests/cli_aux.sh ./bwa

@@ -116,13 +116,25 @@ int bwa_typehla_selctg(int argc, char *argv[])
 		char *qname, *rname, *pos_s, *cigar, *save = NULL;
 		long start, end;
 		char *p;
-		int as = INT_MIN, xs = INT_MIN;
+		int as, xs;
 		khint_t kb;
 		intpair_v *ivp;
 		size_t i;
 
 		if (line.l == 0 || line.s[0] == '@')
 			continue;
+
+		as = INT_MIN;
+		xs = INT_MIN;
+		/* Optional tags: parse before strtok_r clobbers tabs in line.s */
+		{
+			char *px = strstr(line.s, "\tAS:i:");
+			if (px)
+				as = (int)strtol(px + 6, NULL, 10);
+			px = strstr(line.s, "\tXS:i:");
+			if (px)
+				xs = (int)strtol(px + 6, NULL, 10);
+		}
 
 		qname = strtok_r(line.s, "\t", &save);
 		if (!qname)
@@ -166,13 +178,6 @@ int bwa_typehla_selctg(int argc, char *argv[])
 				if (o > max_ovlp)
 					max_ovlp = o;
 			}
-			p = strstr(line.s, "\tAS:i:");
-			if (p)
-				as = (int)strtol(p + 5, NULL, 10);
-			p = strstr(line.s, "\tXS:i:");
-			if (p)
-				xs = (int)strtol(p + 5, NULL, 10);
-
 			k = kh_get(sel_ctg, hctg, qname);
 			if (k == kh_end(hctg)) {
 				char *key = strdup(qname);

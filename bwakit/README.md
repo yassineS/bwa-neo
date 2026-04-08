@@ -74,8 +74,7 @@ bwa.kit
 |-- README.md                  This README file.
 |-- run-bwamem                 *Entry script* for the entire mapping pipeline.
 |-- bwa                        *BWA binary*
-|-- k8                         Interpretor for *.js scripts.
-|-- bwa-postalt.js             Post-process alignments to ALT contigs/decoys/HLA genes.
+|-- (k8 optional)              Upstream bwakit used k8 for *.js; bwa-neo uses `bwa postalt` / `bwa typehla*`.
 |-- htsbox                     Used by run-bwamem for shuffling BAMs and BAM=>FASTQ.
 |-- samblaster                 MarkDuplicates for reads from the same library. v0.1.20
 |-- samtools                   SAMtools for sorting and SAM=>BAM conversion. v1.1
@@ -87,10 +86,8 @@ bwa.kit
 |   |-- hs38DH-extra.fa        Decoy and HLA gene sequences. Used by run-gen-ref.
 |   `-- hs38DH.fa.alt          ALT-to-GRCh38 alignment. Used by run-gen-ref.
 |
-|-- run-HLA                    HLA typing for sequences extracted by bwa-postalt.js.
-|-- typeHLA.sh                 Type one HLA-gene. Called by run-HLA.
-|-- typeHLA.js                 HLA typing from exon-to-contig alignment. Used by typeHLA.sh.
-|-- typeHLA-selctg.js          Select contigs overlapping HLA exons. Used by typeHLA.sh.
+|-- run-HLA                    HLA typing for sequences extracted by `bwa postalt` (see stderr for liftover status).
+|-- typeHLA.sh                 Type one HLA-gene. Called by run-HLA (uses `bwa typehla-selctg` / `bwa typehla`).
 |-- fermi2.pl                  Fermi2 wrapper. Used by typeHLA.sh for de novo assembly.
 |-- fermi2                     Fermi2 binary. Used by fermi2.pl.
 |-- ropebwt2                   RopeBWT2 binary. Used by fermi2.pl.
@@ -101,11 +98,11 @@ bwa.kit
 |   `-- HLA-ALT-idx            BWA indices of each HLA ALT contig. Used by typeHLA.sh
 |       `-- (...)
 |
-`-- doc                        BWA documentations
-    |-- bwa.1                  Manpage
-    |-- NEWS.md                Release Notes
+`-- doc                        BWA documentations (upstream tarball layout)
+    |-- bwa.1                  Manpage — in **bwa-neo**: [`man/bwa.1`](../man/bwa.1)
+    |-- NEWS.md                Release Notes — in **bwa-neo**: [`docs/NEWS.md`](../docs/NEWS.md)
     |-- README.md              GitHub README page
-    `-- README-alt.md          Documentation for ALT mapping
+    `-- README-alt.md          ALT mapping — in **bwa-neo**: [`docs/README-alt.md`](../docs/README-alt.md)
 ```
 
 [res]: https://sourceforge.net/projects/bio-bwa/files/bwakit
