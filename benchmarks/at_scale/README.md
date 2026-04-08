@@ -66,6 +66,7 @@ cd benchmarks/at_scale
 pixi install
 pixi run bench-neo-only   # neo only; threaded aln + samse -t + sampe + samse self-test + manifest
 pixi run bench            # + conda `bwa` baseline, SE/PE first-11 parity, `publication` profile (threads 4)
+pixi run bench-publication-local  # local publication-scale profile with synthetic 1M-read modern+aDNA runs
 ```
 
 Override binaries (advanced):
@@ -78,6 +79,23 @@ pixi run -- nextflow run nextflow/main.nf -profile standard,publication \
 ```
 
 Profiles: compose **`standard`** with **`publication`** (baseline + higher thread counts) or **`neo_only`** (no baseline).
+
+`bench-publication-local` is designed for local workstation runs (not CI) and emits:
+
+- `nextflow/results_publication_local/perf/raw_metrics.tsv`
+- `nextflow/results_publication_local/perf/summary_metrics.tsv`
+- `nextflow/results_publication_local/perf/speedup_metrics.tsv`
+- `nextflow/results_publication_local/publication_manifest.json`
+- `nextflow/results_publication_local/plot/*.pdf|*.svg|*.png` (generated inside the Nextflow pipeline; modern and ancient panels are rendered separately)
+
+Local publication run includes:
+- Modern DNA (`1,000,000` reads): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`
+- Ancient DNA (`1,000,000` reads): ALN pipelines for both SE and PE
+- Thread scaling for ancient ALN: `1, 2, 4, 6, 8` with speedup table in `perf/speedup_metrics.tsv`
+
+Memory notes:
+- Peak RSS is parsed from platform-specific `/usr/bin/time` output (`-v` on GNU, `-l` on BSD/macOS).
+- If peak RSS is unavailable from the host timing tool, metrics are emitted as `-1` (unknown), never silently `0`.
 
 ## Tiers
 

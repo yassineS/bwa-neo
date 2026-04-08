@@ -11,6 +11,8 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
+echo "[DEPRECATED] bwakit/run-HLA is a legacy compatibility wrapper; canonical entry points are 'bwa typehla-selctg' and 'bwa typehla'." >&2
+
 shopt -s nullglob
 for f in "$1".HLA-*.fq; do
 	gene=`echo $f | perl -pe 's/^.*(HLA-[A-Z]+[0-9]*).*fq$/$1/'`

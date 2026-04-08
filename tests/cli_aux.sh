@@ -31,23 +31,9 @@ test_typehla_version() {
 	test "$("$BWA" typehla -v 2>/dev/null)" = "r19"
 }
 
-test_typehla_placeholder() {
-	local out err
-	out=$(mktemp)
-	err=$(mktemp)
-	"$BWA" typehla "$FX/empty.sam.gz" >"$out" 2>"$err"
-	if [ -s "$out" ]; then
-		rm -f "$out" "$err"
-		echo "cli_aux FAIL: typehla should not write GT lines to stdout yet" >&2
-		return 1
-	fi
-	if ! grep -q "not implemented" "$err"; then
-		rm -f "$out" "$err"
-		echo "cli_aux FAIL: typehla stderr should mention not implemented" >&2
-		return 1
-	fi
-	rm -f "$out" "$err"
-	return 0
+cmp_typehla_gt() {
+	"$BWA" typehla "$FX/typehla_exon_to_contig.sam.gz" 2>/dev/null \
+		| cmp -s - "$FX/expected_typehla.gt"
 }
 
 cmp_qualfa || {
@@ -74,6 +60,9 @@ test_typehla_version || {
 	echo "cli_aux FAIL: typehla -v" >&2
 	exit 1
 }
-test_typehla_placeholder || exit 1
+cmp_typehla_gt || {
+	echo "cli_aux FAIL: typehla genotype output" >&2
+	exit 1
+}
 
 echo "cli_aux OK"

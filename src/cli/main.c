@@ -81,7 +81,7 @@ static int usage()
 	fprintf(stderr, "         qualfa2fq     convert FASTA + numeric QUAL to FASTQ\n");
 	fprintf(stderr, "         postalt       ALT companion SAM stream (see stderr; liftover parity pending)\n");
 	fprintf(stderr, "         typehla-selctg select contigs for HLA typing (BED + SAM.gz)\n");
-	fprintf(stderr, "         typehla       HLA genotyping placeholder (reads SAM.gz; GT output not yet in C)\n");
+	fprintf(stderr, "         typehla       infer HLA genotype pairs from exon-to-contig SAM.gz\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr,
 "Note: To use BWA, you need to first index the genome with `bwa index'.\n"
