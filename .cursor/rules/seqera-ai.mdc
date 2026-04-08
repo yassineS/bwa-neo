@@ -1,0 +1,28 @@
+---
+description: Nextflow, Seqera Platform, and Seqera AI — no local seqera CLI required (Cursor + Cursor Cloud)
+alwaysApply: false
+---
+
+# Seqera / Nextflow in bwa-neo
+
+## No assumed CLI install
+
+Do **not** assume the **Seqera AI CLI** (`seqera`) is available in the terminal. That includes **Cursor Cloud** and locked-down local machines. Do not run `seqera ...` unless the user explicitly says the CLI is installed and authenticated.
+
+## How to assist
+
+- Answer Nextflow, Seqera Platform, nf-core, Wave, and workflow questions using accurate general guidance and **official docs**: [Seqera AI](https://docs.seqera.io/platform-cloud/seqera-ai/), [Skills](https://docs.seqera.io/platform-cloud/seqera-ai/skills), [Installation](https://docs.seqera.io/platform-cloud/seqera-ai/installation), [Authentication](https://docs.seqera.io/platform-cloud/seqera-ai/authentication).
+- For **this repo**, use `AGENTS.md`, `design.md`, `requirements.md`, and `tasks.md` for scope and build/test commands.
+
+## Project skills for Seqera AI CLI (when used elsewhere)
+
+When someone runs **`seqera ai`** from this repo (machine where Node/npm is allowed), the CLI loads project **`SKILL.md`** files from the paths listed under **Discovery directories** in [Skills](https://docs.seqera.io/platform-cloud/seqera-ai/skills):
+
+1. `<repo>/.agents/skills/`
+2. `<repo>/.seqera/skills/`
+
+This project defines **`.agents/skills/seqera/SKILL.md`** (session context for bwa-neo).
+
+## Optional CLI (user-initiated only)
+
+If the user chooses to install the CLI: `npm install -g seqera`, then `seqera login` or `SEQERA_ACCESS_TOKEN`, then `seqera ai` or `seqera ai --headless "…"`. Do not require this for normal Cursor assistance.

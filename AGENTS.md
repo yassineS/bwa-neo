@@ -95,6 +95,7 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 ## Cursor Cloud specific instructions
 
 - **Workspace root** in Cloud VMs is `/workspace` (not `~/Code/bwa-neo`).
+- **Seqera AI skills (no CLI install in Cursor):** IDE guidance is in [`.cursor/rules/seqera-ai.mdc`](.cursor/rules/seqera-ai.mdc). For `seqera ai` CLI session context, see [`.agents/skills/seqera/SKILL.md`](.agents/skills/seqera/SKILL.md) and [Seqera Skills](https://docs.seqera.io/platform-cloud/seqera-ai/skills).
 - **CMake C++ compiler caveat:** the default Clang on this VM cannot link `libstdc++`. Use `CC=gcc CXX=g++` when invoking CMake, e.g. `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja`.
 - **Build & test commands** are documented in sections 4 and 5 above. Both Make and CMake builds produce a `bwa` binary.
 - **No runtime services** are needed — this is a pure C project with no databases, containers, or background daemons.
