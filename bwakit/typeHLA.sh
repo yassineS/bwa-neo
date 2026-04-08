@@ -14,6 +14,8 @@ fi
 
 preres="resource-human-HLA"
 root=`dirname $0`
+BWA="${BWA:-$root/bwa}"
+[ -x "$BWA" ] || BWA="$root/../bwa"
 pre=$1.$2
 touch $pre.gt
 
@@ -35,14 +37,14 @@ fi
 
 echo "** Selecting contigs overlapping target exons..." >&2
 (ls $root/$preres/HLA-ALT-idx/*.fa.bwt | sed s,.bwt,, | xargs -i $root/bwa mem -t2 -B1 -O1 -E1 {} $pre.tmp.mag.gz 2>/dev/null) | grep -v ^@ | sort -k3,3 -k4,4n | gzip > $pre.tmp.ALT.sam.gz
-$root/k8 $root/typeHLA-selctg.js $2 $root/$preres/HLA-ALT-exons.bed $pre.tmp.ALT.sam.gz | $root/seqtk subseq $pre.tmp.mag.gz - | gzip -1 > $pre.tmp.fq.gz
+"$BWA" typehla-selctg "$2" "$root/$preres/HLA-ALT-exons.bed" "$pre.tmp.ALT.sam.gz" | $root/seqtk subseq $pre.tmp.mag.gz - | gzip -1 > $pre.tmp.fq.gz
 
 echo "** Mapping exons to de novo contigs..." >&2
 $root/bwa index -p $pre.tmp $pre.tmp.fq.gz 2>/dev/null
 $root/seqtk comp $root/$preres/HLA-CDS.fa | cut -f1 | grep ^$2 | $root/seqtk subseq $root/$preres/HLA-CDS.fa - | $root/bwa mem -aD.1 -t2 $pre.tmp - 2>/dev/null | gzip -1 > $pre.sam.gz
 
 echo "** Typing..." >&2
-$root/k8 $root/typeHLA.js $pre.sam.gz > $pre.gt
+"$BWA" typehla "$pre.sam.gz" > $pre.gt
 
 # delete temporary files
 rm -f $pre.tmp.*

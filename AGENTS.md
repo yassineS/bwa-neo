@@ -41,12 +41,13 @@ Dependencies: C compiler, **zlib**, **pthread** (Linux may need `-lrt` — Makef
 ## 5. Test
 
 ```bash
-make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa
-# or (CMake + CTest + GoogleTest placeholder)
+make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa && tests/cli_aux.sh ./bwa
+# or (CMake + CTest + GoogleTest placeholder; includes cli_aux)
 cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-dir build --output-on-failure
 ```
 
 - `**tests/smoke_align.sh**` — minimal index → aln → samse (incl. `samse -t`).
+- `**tests/cli_aux.sh**` — aux subcommands (`qualfa2fq`, `xa2multi`, `postalt`, `typehla-selctg`, `typehla`).
 - `**tests/golden_sam.sh**` — regression on `**tests/fixtures/tiny/**` (first 11 SAM fields + threaded samse parity).
 - Details: `[tests/README.md](tests/README.md)`.
 
@@ -98,5 +99,5 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 - **CMake C++ compiler caveat:** the default Clang on this VM cannot link `libstdc++`. Use `CC=gcc CXX=g++` when invoking CMake, e.g. `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja`.
 - **Build & test commands** are documented in sections 4 and 5 above. Both Make and CMake builds produce a `bwa` binary.
 - **No runtime services** are needed — this is a pure C project with no databases, containers, or background daemons.
-- **Full test suite** (Make path): `make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa`
+- **Full test suite** (Make path): `make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa && tests/cli_aux.sh ./bwa`
 - **Full test suite** (CMake path): `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja && cmake --build build && ctest --test-dir build --output-on-failure`

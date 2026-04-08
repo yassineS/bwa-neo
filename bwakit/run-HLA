@@ -17,4 +17,9 @@ for f in $1.HLA-*.fq; do
 	`dirname $0`/typeHLA.sh $ctg_opt $1 $gene
 done
 
-ls $1.HLA-*.gt | xargs -i echo grep ^GT {} \| head -1 | sh | sed "s,^GT,$1,"
+for f in $1.HLA-*.gt; do
+	[ -f "$f" ] || continue
+	line=$(grep '^GT' "$f" 2>/dev/null | head -1)
+	[ -n "$line" ] || continue
+	printf '%s\n' "$line" | sed "s,^GT,$1,"
+done
