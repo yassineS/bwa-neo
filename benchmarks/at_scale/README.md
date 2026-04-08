@@ -13,6 +13,45 @@ This directory specifies **self-contained**, **reproducible** benchmarks compari
 
 CI keeps **tiny** fixtures (`tests/fixtures/tiny/`). This workflow targets **scale** (full chromosomes or Zenodo refbias assets).
 
+## Simulation-based testing (ancient DNA and modern DNA)
+
+The original at-scale plan focused on **real** downloads (Zenodo, references). For **publication-grade** coverage of bwa-neo’s intended use cases, the Nextflow workflow should also include **simulation tracks** with **pinned tool versions**, **fixed RNG seeds**, and **documented parameters**.
+
+### Why simulation
+
+- **Ancient DNA (aDNA)**: Short, damaged reads where **`aln` / `samse` / `sampe`** are primary; performance and behavior depend on error profiles and length, not only on real-data batch effects.
+- **Modern DNA**: Longer reads and different error models; **`mem` / mem2** are in scope. Simulators give **ground-truth** coordinates for optional accuracy metrics (e.g. fraction correctly mapped within tolerance) in addition to wall-clock performance.
+
+### Recommended simulators (pin one per track in `provenance.json`)
+
+| Track | Role | Typical tools (choose and cite one stack) |
+|-------|------|-------------------------------------------|
+| **Modern short reads** | Baseline throughput and parity under realistic Illumina-like errors | **ART**, **dwgsim**, **wgsim** (from SAMtools/htslib) |
+| **Ancient short reads** | Damage + short fragments | **gargammel** (or **pygargammel**) for deamination/fragmentation; optionally combine with **ART**/dwgsim for sequencing errors **before** damage; **damage patterns** documented (5′ C→T, 3′ G→A rates) |
+| **Optional validation** | Compare alignments to known truth | Simulator outputs **truth** (positions/strand); downstream **accuracy** process (not required for pure timing parity vs baseline BWA) |
+
+**Containers**: Run simulators in **Conda** or **Docker** images with locked digests; record image SHA in provenance.
+
+**Seeds**: Every simulator that accepts a seed must use **`params.rng_seed`** (or per-track seeds derived deterministically, e.g. `seed + track_id`) so runs are repeatable and CI smoke tiers are stable.
+
+### Nextflow processes (simulation)
+
+1. **SIM_REF_SLICE** (optional) — Extract a reproducible region from a downloaded reference (fixed interval list) so simulations are fast in CI.
+2. **SIM_MODERN** — Produce modern-like paired or single FASTQ + truth manifest; parameters: read length, coverage, error model, seed.
+3. **SIM_ANCIENT** — Produce aDNA-like FASTQ (fragment length distribution + post-mortem damage); same reference slice as modern where comparisons are fair.
+4. **MAP_AND_BENCH** — Same as non-sim pipeline: neo vs baseline(s), timing TSV, optional normalized SAM diff for parity.
+5. **ACCURACY** (optional) — Parse truth vs SAM to emit mapping rate / position error; separate figure from raw runtime.
+
+### Performance reporting for simulation tracks
+
+- Report **per track** (`modern_sim`, `ancient_sim`) alongside real-data tiers.
+- Figures: runtime by **scenario** (modern vs ancient), not only by binary; supplementary table listing simulator parameters.
+
+### Relation to real data
+
+- **Simulation** does not replace Zenodo / SRA validation; it **complements** it with controlled error models and reproducible seeds.
+- Real-data rows stay in the design under [Data sources](#data-sources-download-in-pipeline); simulation rows use **generated** FASTQ with checksums stored after generation.
+
 ## Reproducibility: seeds and determinism
 
 bwa-neo inherits upstream behavior:
@@ -31,7 +70,7 @@ If a code path ever introduces new RNG use without a fixed seed, the benchmark s
 | **Reference FASTA** | Shared index for parity | Explicit URL + version (e.g. GRCh38 primary assembly) + `.fai` from same build |
 | **Reads** | WGS or exome subset | ENA/SRA or Zenodo; record accession and checksum |
 
-Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenodo_record`, and `checksums_file` for audit.
+Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenodo_record`, and `checksums_file` for audit. For simulation: `rng_seed`, `sim_modern_profile`, `sim_ancient_profile` (or paths to YAML describing gargammel/ART parameters), and `enable_simulation` (boolean).
 
 ## Correctness pipeline (Nextflow processes)
 

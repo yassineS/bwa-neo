@@ -20,8 +20,10 @@
 workflow {
     // Stub: replace with channel-driven download + map steps
     Channel.empty()
-        .view { "Define processes: FETCH_REF, FETCH_READS, INDEX_CLASSIC, INDEX_MEM2, " +
-                "RUN_ALN_SAMSE_BASELINE, RUN_ALN_SAMSE_NEO, DIFF_SAM, BENCH_*" }
+        .view { "Define processes: FETCH_REF, FETCH_READS, " +
+                "SIM_REF_SLICE (optional), SIM_MODERN, SIM_ANCIENT, " +
+                "INDEX_CLASSIC, INDEX_MEM2, " +
+                "RUN_ALN_SAMSE_BASELINE, RUN_ALN_SAMSE_NEO, DIFF_SAM, BENCH_*, ACCURACY (optional)" }
 }
 
 /*
