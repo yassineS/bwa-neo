@@ -96,46 +96,60 @@ Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenod
 
 Scripts should live under `benchmarks/at_scale/plot/` and read only generated TSV/CSV.
 
-## Running (Nextflow smoke)
+## Running (Pixi + Nextflow — self-contained)
 
-From the **repository root**, build `bwa` (`make -j`), then either:
+All benchmark **dependencies and entrypoints** for this folder live in **`pixi.toml`**. Do not use a Makefile here.
 
-```bash
-make -C benchmarks/at_scale smoke-nf
-```
-
-Or manually (keeps Nextflow cache under **`.nextflow_home/`** at repo root):
+**Prerequisites:** [Pixi](https://pixi.sh/) installed (`curl -fsSL https://pixi.sh/install.sh | bash` or package manager).
 
 ```bash
-export NXF_HOME="$(pwd)/.nextflow_home"
-mkdir -p "$NXF_HOME"
-cd benchmarks/at_scale/nextflow
-nextflow run main.nf -profile standard --outdir "$(pwd)/results_smoke"
+cd benchmarks/at_scale
+pixi install
 ```
 
-Defaults use `tests/fixtures/tiny/ref.fa` and `reads.fq`. Outputs: `results_smoke/neo/neo.sam` (or `baseline.sam` when that track runs) and `versions.txt`.
-
-**Optional SAM parity** (first 11 alignment fields) vs another BWA binary:
+**Full benchmark (recommended for publication):** builds **bwa-neo** with **CMake + Ninja** into **`../../build-benchmark/bwa`** (no repo-root `make` required), runs Nextflow with **conda `bwa`** as baseline, SAM first-11 parity, and writes **`publication_manifest.json`**.
 
 ```bash
-nextflow run main.nf -profile standard \
-  --bwa_baseline /path/to/lh3/bwa \
-  --outdir results_parity
+pixi run bench
 ```
 
-On success, `results_parity/parity/parity.ok` records a match; mismatches write `parity.first11.diff` and fail the run.
-
-### Seqera AI review
-
-With the [Seqera AI CLI](https://docs.seqera.io/platform-cloud/seqera-ai/) authenticated (`seqera login` or `SEQERA_ACCESS_TOKEN`), run from the repo root so **`.agents/skills/`** is discovered:
+**Neo only** (no baseline / no parity; faster):
 
 ```bash
-seqera ai --headless "Sanity-check my Nextflow file benchmarks/at_scale/nextflow/main.nf for DSL2 issues"
+pixi run bench-neo-only
 ```
 
-If the CLI is not logged in, validation is still covered by `make -C benchmarks/at_scale smoke-nf` and the golden bash tests.
+**Outputs (full `bench`):**
 
-Profiles: `standard` (local executor). Add `docker` / `slurm` / `awsbatch` profiles when you containerize or offload.
+| Path | Purpose |
+|------|--------|
+| `nextflow/results_publication/neo/neo.sam` | Alignment (neo binary) |
+| `nextflow/results_publication/baseline/baseline.sam` | Alignment (conda `bwa`, version pinned in `pixi.lock`) |
+| `nextflow/results_publication/parity/parity.ok` | First-11-field parity summary |
+| `nextflow/results_publication/publication_manifest.json` | Git SHA, Nextflow version line, inputs, parity block, `methods_notes` (e.g. neo `samse -t` vs stock `bwa`) — cite in methods / supplementary |
+
+Nextflow cache: **`benchmarks/at_scale/.nextflow_home/`** (set by tasks).
+
+**Override paths** (advanced):
+
+```bash
+cd benchmarks/at_scale
+export NXF_HOME="$PWD/.nextflow_home"
+export BWA_NEO="/path/to/bwa-neo"
+export BWA_BASELINE="/path/to/baseline/bwa"
+pixi run -- nextflow run nextflow/main.nf -profile standard \
+  --enable_baseline true \
+  --bwa_baseline "$BWA_BASELINE" \
+  --outdir nextflow/custom_out
+```
+
+Use `--enable_baseline false` for neo-only (ignores `BWA_BASELINE` in the environment).
+
+### Agent / “skills” context (not the Seqera CLI)
+
+Project guidance aligned with [Seqera Skills discovery](https://docs.seqera.io/platform-cloud/seqera-ai/skills) lives in **`.agents/skills/seqera/SKILL.md`** and **`.cursor/rules/seqera-ai.mdc`**. Coding agents should use those files and this README — **not** `seqera ai` — unless you explicitly choose to install and run the Seqera CLI yourself.
+
+**Profiles:** `standard` (local). Add HPC/cloud profiles in `nextflow.config` when needed.
 
 ## Tiers
 

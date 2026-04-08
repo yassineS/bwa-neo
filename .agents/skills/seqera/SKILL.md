@@ -1,24 +1,26 @@
 ---
 name: bwa-neo
-description: bwa-neo workspace — BWA fork, aln/samse/sampe, tests, CMake/Make; aligns with Seqera AI skill discovery (see docs.seqera.io platform-cloud seqera-ai skills)
+description: bwa-neo workspace — BWA fork, benchmarks via Pixi+Nextflow under benchmarks/at_scale; Nextflow/Seqera guidance from official docs (no Seqera CLI required in Cursor)
 ---
 
-# bwa-neo in Seqera AI sessions
+# bwa-neo (agent skill context)
 
-Use this when the user runs **Seqera AI** from this repository. Discovery paths are documented in [Skills — discovery directories](https://docs.seqera.io/platform-cloud/seqera-ai/skills) (project: `.agents/skills/`, `.seqera/skills/`). Keep added context under ~5 KB per skill.
+Portable skill under [Agent Skills / Seqera discovery](https://docs.seqera.io/platform-cloud/seqera-ai/skills) (`.agents/skills/`). **Do not rely on the Seqera AI CLI** in Cursor or Cursor Cloud; use this file and `.cursor/rules/seqera-ai.mdc` as instructions.
 
-## Repository facts
+## Repository
 
-- **Product:** Fork of lh3/bwa with CI, tests, optional parallel `samse -t`, phased bwa-mem2 integration (`design.md`, `tasks.md`).
-- **Build:** `make -j` → `./bwa`; or `cmake -S . -B build && cmake --build build` → `build/bwa`.
-- **Tests:** `tests/smoke_align.sh ./bwa`, `tests/golden_sam.sh ./bwa`, `tests/golden_sampe.sh ./bwa`.
-- **Entrypoints:** `src/cli/main.c`; classic pipeline in `src/backtrack/`; `mem` in `src/mem/`.
-- **Contributor onboarding:** `AGENTS.md`, `docs/DEVELOPMENT.md`.
+- **Product:** lh3/bwa fork with CI, parallel `samse -t`, phased bwa-mem2 (`design.md`, `tasks.md`).
+- **Library build (general):** `cmake -S . -B build && cmake --build build` → `build/bwa`, or root `Makefile`.
+- **Benchmarks (self-contained):** `benchmarks/at_scale/` — **Pixi** (`pixi.toml`) provides Nextflow, JDK, baseline **bwa** (conda), and CMake toolchains; tasks build neo into `build-benchmark/bwa` and run Nextflow. **No Makefile in that folder.**
+- **Tests:** `tests/smoke_align.sh`, `tests/golden_sam.sh`, `tests/golden_sampe.sh` (need a `bwa` binary path).
+- **Onboarding:** `AGENTS.md`, `docs/DEVELOPMENT.md`.
 
-## Nextflow / Seqera Platform
+## Nextflow / publication outputs
 
-For pipeline and platform help, follow current **Nextflow** and **Seqera** best practices and built-in CLI skills (e.g. `/nextflow-config`, `/nf-pipeline-structure`) from [Seqera AI skills](https://docs.seqera.io/platform-cloud/seqera-ai/skills). Any Nextflow under `benchmarks/` is experimental until wired in `tasks.md`.
+- Pipeline: `benchmarks/at_scale/nextflow/main.nf` — `index` / `aln` / `samse`, optional first-11 SAM parity vs `params.bwa_baseline`, **`publication_manifest.json`** (git SHA, inputs, parity status, tool paths).
+- Cite pinned tool versions from **`pixi.lock`** and manifest JSON in methods/supplements.
 
-## Cursor (no local CLI)
+## Further reading
 
-Contributors using **Cursor** or **Cursor Cloud** may not have `seqera` installed. Workspace guidance for the IDE lives in `.cursor/rules/seqera-ai.mdc` and does not require shell access to the Seqera CLI.
+- [Seqera AI / Skills](https://docs.seqera.io/platform-cloud/seqera-ai/skills) (discovery paths, payload limits)
+- [Nextflow docs](https://www.nextflow.io/docs/latest/)

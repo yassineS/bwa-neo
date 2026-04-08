@@ -10,9 +10,14 @@ bwamem-lite
 /build/
 /third_party/bwa-mem2/
 
-# Nextflow (benchmarks/at_scale)
+# Nextflow + Pixi (benchmarks/at_scale)
 .nextflow_home/
+benchmarks/at_scale/.pixi/
+benchmarks/at_scale/work/
+benchmarks/at_scale/.nextflow/
+benchmarks/at_scale/.nextflow.log*
 benchmarks/at_scale/nextflow/work/
 benchmarks/at_scale/nextflow/.nextflow/
 benchmarks/at_scale/nextflow/.nextflow.log*
 benchmarks/at_scale/nextflow/results*/
+/build-benchmark/

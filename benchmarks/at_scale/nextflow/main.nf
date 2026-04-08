@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 /*
- * bwa-neo benchmark smoke: index + aln + samse on tiny fixtures.
- * Optional: params.bwa_baseline — run same pipeline and diff first 11 SAM fields vs neo.
+ * bwa-neo benchmark: index + aln + samse; optional first-11 SAM parity vs baseline bwa;
+ * publication_manifest.json for methods / supplements.
  */
 nextflow.enable.dsl = 2
 
@@ -14,20 +14,21 @@ process BWA_ALN_SAMSE {
 
     output:
         tuple val(meta), path("${meta.id}.sam"), emit: sam
-        path('versions.txt'), emit: versions
+        tuple val(meta), path("${meta.id}_versions.txt"), emit: versions
 
     script:
         def bw = meta.bwa_bin as String
         def sid = meta.id as String
+        // Upstream lh3/bwa has no `samse -t`; bwa-neo does. Keep aln threading symmetric where supported.
+        def samse_extra = (sid == 'neo') ? "-t ${params.threads_samse}" : ''
         """
         set -euo pipefail
-        # Inputs are staged by Nextflow (symlinks); use them in place for index + aln + samse
         '${bw}' index ${ref}
         '${bw}' aln -t ${params.threads_aln} ${ref} ${reads} > reads.sai
-        '${bw}' samse -t ${params.threads_samse} ${ref} reads.sai ${reads} > ${sid}.sam
-        echo "id=${meta.id}" > versions.txt
-        echo "bwa=${bw}" >> versions.txt
-        '${bw}' 2>&1 | head -n 3 >> versions.txt || true
+        '${bw}' samse ${samse_extra} ${ref} reads.sai ${reads} > ${sid}.sam
+        echo "id=${meta.id}" > ${sid}_versions.txt
+        echo "bwa=${bw}" >> ${sid}_versions.txt
+        '${bw}' 2>&1 | head -n 3 >> ${sid}_versions.txt || true
         """
 }
 
@@ -62,6 +63,30 @@ process SAM_FIRST11_DIFF {
         """
 }
 
+process PUBLICATION_MANIFEST {
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+        tuple val(_meta), path(neo_sam), path(neo_versions), path(parity_marker)
+
+    output:
+        path('publication_manifest.json'), emit: manifest
+
+    script:
+        """
+        set -euo pipefail
+        export BWA_NEO='${params.bwa_neo}'
+        export BWA_BASELINE='${params.bwa_baseline}'
+        python3 '${projectDir}/../scripts/write_publication_manifest.py' \\
+          --neo-sam '${neo_sam}' \\
+          --neo-versions '${neo_versions}' \\
+          --parity-file '${parity_marker}' \\
+          --ref-fa '${params.ref_fa}' \\
+          --reads-fq '${params.reads_fq}' \\
+          --out publication_manifest.json
+        """
+}
+
 workflow {
     def ref = file(params.ref_fa, checkIfExists: true)
     def reads = file(params.reads_fq, checkIfExists: true)
@@ -69,16 +94,25 @@ workflow {
     def neo_meta = [id: 'neo', bwa_bin: params.bwa_neo]
     def ch = channel.of(tuple(neo_meta, ref, reads))
 
-    if (params.bwa_baseline) {
+    if (params.enable_baseline && params.bwa_baseline) {
         def base_meta = [id: 'baseline', bwa_bin: params.bwa_baseline]
         ch = ch.mix(channel.of(tuple(base_meta, ref, reads)))
     }
 
     BWA_ALN_SAMSE(ch)
 
-    if (params.bwa_baseline) {
+    def neo_join = BWA_ALN_SAMSE.out.sam.join(BWA_ALN_SAMSE.out.versions)
+        .filter { meta, sam, ver -> meta.id == 'neo' }
+
+    def ch_parity
+    if (params.enable_baseline && params.bwa_baseline) {
         def neo_sam = BWA_ALN_SAMSE.out.sam.filter { meta, sam -> meta.id == 'neo' }.map { m, s -> s }.first()
         def base_sam = BWA_ALN_SAMSE.out.sam.filter { meta, sam -> meta.id == 'baseline' }.map { m, s -> s }.first()
         SAM_FIRST11_DIFF(neo_sam.combine(base_sam))
+        ch_parity = SAM_FIRST11_DIFF.out.ok
+    } else {
+        ch_parity = channel.fromPath("${projectDir}/../assets/no_parity.txt", checkIfExists: true)
     }
+
+    PUBLICATION_MANIFEST(neo_join.combine(ch_parity))
 }

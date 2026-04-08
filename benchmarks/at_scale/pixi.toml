@@ -1,0 +1,29 @@
+[workspace]
+authors = ["bwa-neo contributors"]
+channels = ["conda-forge", "bioconda"]
+name = "bwa-neo-at-scale"
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+version = "0.1.0"
+
+[dependencies]
+nextflow = ">=24.10.0"
+openjdk = "17.*"
+bwa = ">=0.7.18"
+python = ">=3.11"
+pyyaml = ">=6.0"
+cmake = ">=3.20"
+ninja = ">=1.11"
+zlib = "*"
+c-compiler = "*"
+cxx-compiler = "*"
+
+[tasks.build-bwa-neo]
+cmd = "bash scripts/pixi_build_bwa_neo.sh"
+
+[tasks.bench]
+depends-on = ["build-bwa-neo"]
+cmd = "bash scripts/pixi_bench.sh results_publication"
+
+[tasks.bench-neo-only]
+depends-on = ["build-bwa-neo"]
+cmd = "bash scripts/pixi_bench.sh results_publication_neo_only --neo-only"
