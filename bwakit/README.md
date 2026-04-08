@@ -10,6 +10,9 @@ information retained. Bwakit also *optionally* trims adapters (via
 [trimadap][ta]), marks duplicates (via [samblaster][sb]) and sorts the final
 alignment (via [samtools][smtl]).
 
+In **bwa-neo**, `run-HLA` and `typeHLA.sh` are kept as **legacy compatibility wrappers**.
+Canonical HLA helper CLI entry points are `bwa typehla-selctg` and `bwa typehla`.
+
 Bwakit has two entry scripts: `run-gen-ref` which downloads and generates human
 reference genomes, and `run-bwamem` which prints mapping command lines on the
 standard output that can be piped to `sh` to execute. The two scripts will call
@@ -86,8 +89,8 @@ bwa.kit
 |   |-- hs38DH-extra.fa        Decoy and HLA gene sequences. Used by run-gen-ref.
 |   `-- hs38DH.fa.alt          ALT-to-GRCh38 alignment. Used by run-gen-ref.
 |
-|-- run-HLA                    HLA typing for sequences extracted by `bwa postalt` (see stderr for liftover status).
-|-- typeHLA.sh                 Type one HLA-gene. Called by run-HLA (uses `bwa typehla-selctg` / `bwa typehla`).
+|-- run-HLA                    Legacy/deprecated compatibility wrapper around `bwa typehla-selctg` / `bwa typehla`.
+|-- typeHLA.sh                 Legacy/deprecated per-gene compatibility wrapper called by run-HLA.
 |-- fermi2.pl                  Fermi2 wrapper. Used by typeHLA.sh for de novo assembly.
 |-- fermi2                     Fermi2 binary. Used by fermi2.pl.
 |-- ropebwt2                   RopeBWT2 binary. Used by fermi2.pl.

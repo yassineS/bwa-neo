@@ -108,6 +108,10 @@ version 3.18.0 and are used to collect reads sequenced from these genes.
 
 ### HLA typing
 
+In **bwa-neo**, the canonical CLI entry points for this path are `bwa typehla-selctg`
+and `bwa typehla`. Legacy bwakit wrappers (`run-HLA`, `typeHLA.sh`) are retained
+for compatibility only.
+
 HLA genes are known to be associated with many autoimmune diseases, infectious
 diseases and drug responses. They are among the most important genes but are
 rarely studied by WGS projects due to the high sequence divergence between

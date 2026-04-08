@@ -1,0 +1,6 @@
+@SQ	SN:ctg1	LN:120
+@SQ	SN:ctg2	LN:120
+HLA-A*01:01_1	0	ctg1	1	60	100M	*	0	0	*	*	NM:i:0
+HLA-A*01:01_1	0	ctg2	1	60	100M	*	0	0	*	*	NM:i:5
+HLA-A*02:01_1	0	ctg1	1	60	100M	*	0	0	*	*	NM:i:5
+HLA-A*02:01_1	0	ctg2	1	60	100M	*	0	0	*	*	NM:i:0

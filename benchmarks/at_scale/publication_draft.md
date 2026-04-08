@@ -26,20 +26,24 @@
 
 All checks passed.
 
-| Check | Result | Evidence |
-|---|---|---|
-| SE parity (first 11 SAM fields) | PASS | `nextflow/results_publication/parity/parity_se.ok` |
-| PE parity (first 11 SAM fields) | PASS | `nextflow/results_publication/parity/parity_pe.ok` |
-| `samse -t` self-parity (`-t 1` vs `-t 4`) | PASS | `nextflow/results_publication/parity/samse_thread_parity.ok` |
+
+| Check                                     | Result | Evidence                                                     |
+| ----------------------------------------- | ------ | ------------------------------------------------------------ |
+| SE parity (first 11 SAM fields)           | PASS   | `nextflow/results_publication/parity/parity_se.ok`           |
+| PE parity (first 11 SAM fields)           | PASS   | `nextflow/results_publication/parity/parity_pe.ok`           |
+| `samse -t` self-parity (`-t 1` vs `-t 4`) | PASS   | `nextflow/results_publication/parity/samse_thread_parity.ok` |
+
 
 Observed record counts from generated SAMs:
 
-| Output | Alignments |
-|---|---:|
-| `se/neo/neo.sam` | 1 |
-| `se/baseline/baseline.sam` | 1 |
-| `pe/neo/neo.sam` | 2 |
-| `pe/baseline/baseline.sam` | 2 |
+
+| Output                     | Alignments |
+| -------------------------- | ---------- |
+| `se/neo/neo.sam`           | 1          |
+| `se/baseline/baseline.sam` | 1          |
+| `pe/neo/neo.sam`           | 2          |
+| `pe/baseline/baseline.sam` | 2          |
+
 
 ## Publication-ready wording (results)
 
