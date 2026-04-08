@@ -38,8 +38,8 @@
 ## Refbias benchmarks
 
 - [x] `benchmarks/refbias/README.md` + `Makefile` smoke target
-- [x] `benchmarks/at_scale/` — **Pixi**-managed Nextflow (`pixi run bench`); CMake build to `build-benchmark/bwa`; `publication_manifest.json` + optional conda-`bwa` first-11 parity
-- [ ] Extend Nextflow workflow (fetch, hyperfine, plots; **simulation** tracks for modern + ancient DNA per `benchmarks/at_scale/README.md`)
+- [x] `benchmarks/at_scale/` — **Pixi**-managed Nextflow (`pixi run bench` / `pixi run bench-neo-only`): CMake → `build-benchmark/bwa`; **multi-threaded** `aln -t` + neo **`samse -t`** (baseline stock `samse` without `-t`); **PE** `aln -t` per mate + **`sampe`** (no `-t` on sampe); SE/PE first-11 parity vs conda `bwa` when baseline enabled; neo **samse `-t` self-test**; **`publication_manifest.json`** (schema v2, assembled in the workflow — no Python/bash manifest writers)
+- [ ] Extend Nextflow workflow (Zenodo fetch, **hyperfine** timing, **plots**; **simulation** tracks for modern + ancient DNA per `benchmarks/at_scale/README.md`)
 - [ ] Download Zenodo 14234666 assets via scripted checksum
 - [ ] Nightly full benchmark job (optional)
 

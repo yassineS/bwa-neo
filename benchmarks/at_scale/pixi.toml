@@ -9,8 +9,6 @@ version = "0.1.0"
 nextflow = ">=24.10.0"
 openjdk = "17.*"
 bwa = ">=0.7.18"
-python = ">=3.11"
-pyyaml = ">=6.0"
 cmake = ">=3.20"
 ninja = ">=1.11"
 zlib = "*"
@@ -18,12 +16,12 @@ c-compiler = "*"
 cxx-compiler = "*"
 
 [tasks.build-bwa-neo]
-cmd = "bash scripts/pixi_build_bwa_neo.sh"
+cmd = "cmake -S \"$PIXI_PROJECT_ROOT/../..\" -B \"$PIXI_PROJECT_ROOT/../../build-benchmark\" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF && cmake --build \"$PIXI_PROJECT_ROOT/../../build-benchmark\""
 
 [tasks.bench]
 depends-on = ["build-bwa-neo"]
-cmd = "bash scripts/pixi_bench.sh results_publication"
+cmd = "export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && test -x \"$BWA_NEO\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,publication --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_publication\""
 
 [tasks.bench-neo-only]
 depends-on = ["build-bwa-neo"]
-cmd = "bash scripts/pixi_bench.sh results_publication_neo_only --neo-only"
+cmd = "export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && test -x \"$BWA_NEO\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,neo_only --bwa_neo \"$BWA_NEO\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_neo_only\""

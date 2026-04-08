@@ -107,28 +107,34 @@ cd benchmarks/at_scale
 pixi install
 ```
 
-**Full benchmark (recommended for publication):** builds **bwa-neo** with **CMake + Ninja** into **`../../build-benchmark/bwa`** (no repo-root `make` required), runs Nextflow with **conda `bwa`** as baseline, SAM first-11 parity, and writes **`publication_manifest.json`**.
+**Full benchmark (recommended for publication):** builds **bwa-neo** with **CMake + Ninja** into **`../../build-benchmark/bwa`** (no repo-root `make` required), runs Nextflow with profile **`standard,publication`** (defaults **`threads_aln` / `threads_samse` = 4**, baseline on). The workflow runs **SE** (`index` → `aln -t` → `samse`, neo adds **`-t`** on `samse`) and **PE** (`index` → **`aln -t` on both mates** → **`sampe`**; there is no threaded `sampe` in lh3/bwa or bwa-neo). It checks **first-11-field** SAM parity vs conda **`bwa`**, a neo-only **samse `-t` 1 vs N** self-test on the tiny SE fixture, and writes **`publication_manifest.json`** (assembled in Groovy inside the pipeline; no separate Python manifest script).
 
 ```bash
 pixi run bench
 ```
 
-**Neo only** (no baseline / no parity; faster):
+**Neo only** (no baseline / no cross-binary parity; still runs samse thread self-test if enabled):
 
 ```bash
 pixi run bench-neo-only
 ```
 
-**Outputs (full `bench`):**
+**Outputs (full `bench`, under `nextflow/results_publication/` by default):**
 
 | Path | Purpose |
 |------|--------|
-| `nextflow/results_publication/neo/neo.sam` | Alignment (neo binary) |
-| `nextflow/results_publication/baseline/baseline.sam` | Alignment (conda `bwa`, version pinned in `pixi.lock`) |
-| `nextflow/results_publication/parity/parity.ok` | First-11-field parity summary |
-| `nextflow/results_publication/publication_manifest.json` | Git SHA, Nextflow version line, inputs, parity block, `methods_notes` (e.g. neo `samse -t` vs stock `bwa`) — cite in methods / supplementary |
+| `se/neo/neo.sam` | Single-end SAM (bwa-neo; `aln -t` → `samse -t`) |
+| `se/baseline/baseline.sam` | Single-end SAM (conda `bwa`; `samse` without `-t`) |
+| `pe/neo/neo.sam` | Paired-end SAM (bwa-neo; `aln -t` on both mates → `sampe`) |
+| `pe/baseline/baseline.sam` | Paired-end SAM (conda `bwa`, same command shape) |
+| `parity/parity_se.ok` | SE first-11 parity (neo vs baseline) |
+| `parity/parity_pe.ok` | PE first-11 parity on reads with QNAME `pair` |
+| `parity/samse_thread_parity.ok` | Neo-only: `samse -t 1` vs `-t N` first-11 match |
+| `publication_manifest.json` | Schema **`bwa-neo-benchmark-manifest-v2`**: threads, inputs, `methods_notes`, parity + self-test blocks — cite in methods / supplementary |
 
 Nextflow cache: **`benchmarks/at_scale/.nextflow_home/`** (set by tasks).
+
+**Profiles** (compose with `standard`): **`publication`** — higher `threads_aln` / `threads_samse`, enables baseline parity; **`neo_only`** — baseline off (Pixi task `bench-neo-only` uses this and writes under `nextflow/results_neo_only/`).
 
 **Override paths** (advanced):
 
@@ -137,13 +143,13 @@ cd benchmarks/at_scale
 export NXF_HOME="$PWD/.nextflow_home"
 export BWA_NEO="/path/to/bwa-neo"
 export BWA_BASELINE="/path/to/baseline/bwa"
-pixi run -- nextflow run nextflow/main.nf -profile standard \
-  --enable_baseline true \
+pixi run -- nextflow run nextflow/main.nf -profile standard,publication \
+  --bwa_neo "$BWA_NEO" \
   --bwa_baseline "$BWA_BASELINE" \
   --outdir nextflow/custom_out
 ```
 
-Use `--enable_baseline false` for neo-only (ignores `BWA_BASELINE` in the environment).
+Use `-profile standard,neo_only` (or `--enable_baseline false`) for neo-only runs.
 
 ### Agent / “skills” context (not the Seqera CLI)
 
