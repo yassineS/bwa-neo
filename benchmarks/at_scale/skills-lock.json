@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "nextflow-development": {
+      "source": "anthropics/knowledge-work-plugins",
+      "sourceType": "github",
+      "computedHash": "004d1fc7a2afdb3cb1be8e0944f3322ccfae4805f5d4eb27ed762cbd99c8cccd"
+    },
+    "pixi": {
+      "source": "tttpob/bioinfo-skills",
+      "sourceType": "github",
+      "computedHash": "4792c0b366cad3929dac8d0464513473cb7e6192c61bb5fcf2222d3bd3dcfaab"
+    }
+  }
+}
