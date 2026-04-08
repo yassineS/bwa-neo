@@ -1,6 +1,6 @@
 # Agent / contributor handoff — bwa-neo
 
-Use this file when **onboarding an AI agent or a new human contributor**. It complements `**requirements.md`**, `**design.md**`, and `**tasks.md**`.
+Use this file when **onboarding an AI agent or a new human contributor**. It complements `**docs/requirements.md`**, `**docs/design.md**`, and `**docs/tasks.md**`.
 
 ## 1. Workspace root (required)
 
@@ -13,9 +13,9 @@ Use this file when **onboarding an AI agent or a new human contributor**. It com
 
 | File                                                 | Purpose                                          |
 | ---------------------------------------------------- | ------------------------------------------------ |
-| `[requirements.md](requirements.md)`                 | User stories, acceptance criteria                |
-| `[design.md](design.md)`                             | Architecture, components, compatibility          |
-| `[tasks.md](tasks.md)`                               | Living checklist — what is done vs next          |
+| `[docs/requirements.md](docs/requirements.md)`       | User stories, acceptance criteria                |
+| `[docs/design.md](docs/design.md)`                   | Architecture, components, compatibility        |
+| `[docs/tasks.md](docs/tasks.md)`                     | Living checklist — what is done vs next            |
 | `[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)`         | Git branches, `**gh`**, commits, troubleshooting |
 | `[docs/UPSTREAM_TRIAGE.md](docs/UPSTREAM_TRIAGE.md)` | How to merge fixes from lh3/bwa                  |
 
@@ -56,13 +56,14 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 ```
 ~/Code/bwa-neo/
 ├── AGENTS.md              ← this file
-├── requirements.md, design.md, tasks.md
+├── docs/requirements.md, docs/design.md, docs/tasks.md
 ├── CMakeLists.txt, Makefile
+├── man/bwa.1              ← troff man page (also installed by CMake)
 ├── src/{core,index,backtrack,mem,cli}/ ← BWA C sources by subsystem
 ├── include/bwa/           ← shared/public headers
 ├── tests/                 ← smoke, golden, CTest, fixtures
 ├── benchmarks/refbias/    ← refbias / Zenodo workflow skeleton
-├── docs/                  ← DEVELOPMENT, UPSTREAM_TRIAGE
+├── docs/                  ← requirements, design, tasks, DEVELOPMENT, UPSTREAM_TRIAGE, …
 ├── scripts/               ← bootstrap-git, fetch-bwa-mem2
 ├── cmake/BwaMem2.cmake    ← optional ExternalProject for mem2
 ├── third_party/         ← bwa-mem2 after fetch (often gitignored; see third_party/README.md)
@@ -73,13 +74,13 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 
 - **Keep** `aln` / `samse` / `sampe` strong (ancient DNA / short reads).
 - **Parallelism:** `bwa aln -t` (upstream); `**bwa samse -t`** (bwa-neo) for pac_pos batching.
-- **Future:** merge **bwa-mem2** for `mem` (`tasks.md`, `design.md`) — not finished.
+- **Future:** merge **bwa-mem2** for `mem` (`docs/tasks.md`, `docs/design.md`) — not finished.
 - **Benchmarks:** Dolenz et al. / refbias / Zenodo — context in `benchmarks/refbias/README.md`; runnable Nextflow smoke in `benchmarks/at_scale/` (`pixi run bench` / `bench-neo-only`).
 
 ## 8. CI
 
 - Workflow: `[.github/workflows/ci.yaml](.github/workflows/ci.yaml)` — Make + CMake matrices, smoke + golden on Make path, ASan build optional.
-- Badge: see `[README-BWA-NEO.md](README-BWA-NEO.md)`.
+- Badge: see `[docs/BWA-NEO.md](docs/BWA-NEO.md)`.
 
 ## 9. Sandboxes / automation caveats
 
@@ -91,7 +92,7 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 
 ---
 
-**Summary for agents:** Open `**~/Code/bwa-neo`**, follow `**tasks.md**`, respect `**requirements.md**` / `**design.md**`, run tests after code changes, and use `**docs/DEVELOPMENT.md**` for Git and `gh`.
+**Summary for agents:** Open `**~/Code/bwa-neo`**, follow `**docs/tasks.md**`, respect `**docs/requirements.md**` / `**docs/design.md**`, run tests after code changes, and use `**docs/DEVELOPMENT.md**` for Git and `gh`.
 
 ## Cursor Cloud specific instructions
 

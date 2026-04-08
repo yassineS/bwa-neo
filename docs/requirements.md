@@ -1,6 +1,6 @@
 # bwa-neo — requirements
 
-Work directory: **`~/Code/bwa-neo` only** (e.g. `/Users/yassinesouilmi/Code/bwa-neo`)—no second working copy; use that path as the **IDE / agent workspace root**, not `$HOME`. Onboarding for agents: **`AGENTS.md`**. Git workflow: **`docs/DEVELOPMENT.md`**. Changes follow **requirements → design → tasks** (see `design.md`, `tasks.md`).
+Work directory: **`~/Code/bwa-neo` only** (e.g. `/Users/yassinesouilmi/Code/bwa-neo`)—no second working copy; use that path as the **IDE / agent workspace root**, not `$HOME`. Onboarding for agents: **`AGENTS.md`** (repo root). Git workflow: **`DEVELOPMENT.md`**. Changes follow **requirements → design → tasks** (see `design.md`, `tasks.md` in this folder).
 
 ## Product vision
 
@@ -48,7 +48,7 @@ A maintained fork of BWA that keeps the **`aln` / `samse` / `sampe`** pipeline r
 | ID | Story | Acceptance criteria |
 |----|--------|---------------------|
 | R6.1 | As a user, I can build **bwa-mem2** alongside bwa-neo from one configure step (or documented script). | CMake option or `scripts/fetch-bwa-mem2.sh` + build; `third_party/bwa-mem2` documented. |
-| R6.2 | Long term: single tree routes `mem` to mem2 implementation. | Tracked in `tasks.md` (phased). |
+| R6.2 | Long term: single tree routes `mem` to mem2 implementation. | Tracked in [`tasks.md`](tasks.md) (phased). |
 
 ### R7 — Refbias / performance benchmarks
 

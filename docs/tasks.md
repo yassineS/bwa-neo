@@ -4,7 +4,7 @@
 
 - [x] **`AGENTS.md`** — pointers for agents (workspace path, build, test, Git, layout)
 - [x] Import lh3/bwa sources under `~/Code/bwa-neo`
-- [x] Add `requirements.md`, `design.md`, `tasks.md`
+- [x] Add `docs/requirements.md`, `docs/design.md`, `docs/tasks.md` (planning docs live under `docs/`)
 - [x] Add CMake build; keep Makefile
 - [x] Add `CONTRIBUTING.md`, `SECURITY.md`, `MAINTAINERS.md`
 - [x] `scripts/bootstrap-git.sh` (+ `init-git.sh` wrapper) and **`docs/DEVELOPMENT.md`** (branching, commits)

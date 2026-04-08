@@ -98,11 +98,11 @@ bwa.kit
 |   `-- HLA-ALT-idx            BWA indices of each HLA ALT contig. Used by typeHLA.sh
 |       `-- (...)
 |
-`-- doc                        BWA documentations
-    |-- bwa.1                  Manpage
-    |-- NEWS.md                Release Notes
+`-- doc                        BWA documentations (upstream tarball layout)
+    |-- bwa.1                  Manpage — in **bwa-neo**: [`man/bwa.1`](../man/bwa.1)
+    |-- NEWS.md                Release Notes — in **bwa-neo**: [`docs/NEWS.md`](../docs/NEWS.md)
     |-- README.md              GitHub README page
-    `-- README-alt.md          Documentation for ALT mapping
+    `-- README-alt.md          ALT mapping — in **bwa-neo**: [`docs/README-alt.md`](../docs/README-alt.md)
 ```
 
 [res]: https://sourceforge.net/projects/bio-bwa/files/bwakit

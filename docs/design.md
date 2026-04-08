@@ -44,7 +44,7 @@ flowchart TB
 | `bwa` executable               | CLI entrypoint               | `main.c` dispatches subcommands.                                                                                                                                               |
 | **Parallel `aln`**             | `bwa aln -t`                 | Already present in upstream (`bwtaln.c`); worker pool over reads.                                                                                                              |
 | **Parallel `samse` (pac_pos)** | `bwa samse -t`               | bwa-neo: pthreads split over sequences in `bwa_cal_pac_pos` (shared read-only `bwt_t`). Default `-t 1`.                                                                        |
-| **bwa-mem2**                   | `mem` algorithm              | Fetched into `third_party/bwa-mem2`; built with upstream Makefile or CMake `ExternalProject`. Full source merge of mem2 into a single `bwa` binary is phased (see `tasks.md`). |
+| **bwa-mem2**                   | `mem` algorithm              | Fetched into `third_party/bwa-mem2`; built with upstream Makefile or CMake `ExternalProject`. Full source merge of mem2 into a single `bwa` binary is phased (see [`tasks.md`](tasks.md)). |
 
 
 ## Data models (alignment)
