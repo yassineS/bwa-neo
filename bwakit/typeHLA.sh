@@ -12,6 +12,8 @@ if [ $# -lt 2 ]; then
 	exit 1
 fi
 
+echo "[DEPRECATED] bwakit/typeHLA.sh is a legacy compatibility wrapper; use 'bwa typehla-selctg' and 'bwa typehla' directly." >&2
+
 preres="resource-human-HLA"
 root=`dirname $0`
 BWA="${BWA:-$root/bwa}"
