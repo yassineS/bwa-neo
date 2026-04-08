@@ -1,6 +1,6 @@
 ---
 name: seqera-cli-agent
-description: Use the Seqera AI CLI as a subagent for Nextflow, Seqera Platform, and bioinformatics. Requires `seqera` CLI; see https://docs.seqera.io/platform-cloud/seqera-ai/
+description: Use the Seqera AI CLI as a subagent for Nextflow, Seqera Platform, and bioinformatics workflows. Requires the `seqera` CLI (npm install -g seqera); see https://docs.seqera.io/platform-cloud/seqera-ai/
 triggers:
   - ask seqera
   - seqera agent

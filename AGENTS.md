@@ -100,4 +100,3 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 - **No runtime services** are needed — this is a pure C project with no databases, containers, or background daemons.
 - **Full test suite** (Make path): `make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa`
 - **Full test suite** (CMake path): `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja && cmake --build build && ctest --test-dir build --output-on-failure`
-- **Seqera AI (Nextflow / Platform assistant):** install with `./scripts/install-seqera-ai.sh`, authenticate with `seqera login` or `SEQERA_ACCESS_TOKEN`; see [`docs/SEQERA_AI.md`](docs/SEQERA_AI.md) and [Seqera AI docs](https://docs.seqera.io/platform-cloud/seqera-ai/).
