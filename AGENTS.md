@@ -1,6 +1,6 @@
 # Agent / contributor handoff — bwa-neo
 
-Use this file when **onboarding an AI agent or a new human contributor**. It complements `**requirements.md`**, `**design.md**`, and `**tasks.md**`.
+Use this file when **onboarding an AI agent or a new human contributor**. It complements `**docs/requirements.md`**, `**docs/design.md**`, and `**docs/tasks.md**`.
 
 ## 1. Workspace root (required)
 
@@ -13,9 +13,9 @@ Use this file when **onboarding an AI agent or a new human contributor**. It com
 
 | File                                                 | Purpose                                          |
 | ---------------------------------------------------- | ------------------------------------------------ |
-| `[requirements.md](requirements.md)`                 | User stories, acceptance criteria                |
-| `[design.md](design.md)`                             | Architecture, components, compatibility          |
-| `[tasks.md](tasks.md)`                               | Living checklist — what is done vs next          |
+| `[docs/requirements.md](docs/requirements.md)`       | User stories, acceptance criteria                |
+| `[docs/design.md](docs/design.md)`                   | Architecture, components, compatibility        |
+| `[docs/tasks.md](docs/tasks.md)`                     | Living checklist — what is done vs next            |
 | `[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)`         | Git branches, `**gh`**, commits, troubleshooting |
 | `[docs/UPSTREAM_TRIAGE.md](docs/UPSTREAM_TRIAGE.md)` | How to merge fixes from lh3/bwa                  |
 
@@ -41,12 +41,13 @@ Dependencies: C compiler, **zlib**, **pthread** (Linux may need `-lrt` — Makef
 ## 5. Test
 
 ```bash
-make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa
-# or (CMake + CTest + GoogleTest placeholder)
+make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa && tests/cli_aux.sh ./bwa
+# or (CMake + CTest + GoogleTest placeholder; includes cli_aux)
 cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-dir build --output-on-failure
 ```
 
 - `**tests/smoke_align.sh**` — minimal index → aln → samse (incl. `samse -t`).
+- `**tests/cli_aux.sh**` — aux subcommands (`qualfa2fq`, `xa2multi`, `postalt`, `typehla-selctg`, `typehla`).
 - `**tests/golden_sam.sh**` — regression on `**tests/fixtures/tiny/**` (first 11 SAM fields + threaded samse parity).
 - Details: `[tests/README.md](tests/README.md)`.
 
@@ -55,13 +56,14 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 ```
 ~/Code/bwa-neo/
 ├── AGENTS.md              ← this file
-├── requirements.md, design.md, tasks.md
+├── docs/requirements.md, docs/design.md, docs/tasks.md
 ├── CMakeLists.txt, Makefile
+├── man/bwa.1              ← troff man page (also installed by CMake)
 ├── src/{core,index,backtrack,mem,cli}/ ← BWA C sources by subsystem
 ├── include/bwa/           ← shared/public headers
 ├── tests/                 ← smoke, golden, CTest, fixtures
 ├── benchmarks/refbias/    ← refbias / Zenodo workflow skeleton
-├── docs/                  ← DEVELOPMENT, UPSTREAM_TRIAGE
+├── docs/                  ← requirements, design, tasks, DEVELOPMENT, UPSTREAM_TRIAGE, …
 ├── scripts/               ← bootstrap-git, fetch-bwa-mem2
 ├── cmake/BwaMem2.cmake    ← optional ExternalProject for mem2
 ├── third_party/         ← bwa-mem2 after fetch (often gitignored; see third_party/README.md)
@@ -72,13 +74,13 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 
 - **Keep** `aln` / `samse` / `sampe` strong (ancient DNA / short reads).
 - **Parallelism:** `bwa aln -t` (upstream); `**bwa samse -t`** (bwa-neo) for pac_pos batching.
-- **Future:** merge **bwa-mem2** for `mem` (`tasks.md`, `design.md`) — not finished.
-- **Benchmarks:** Dolenz et al. / refbias / Zenodo — see `benchmarks/refbias/README.md`.
+- **Future:** merge **bwa-mem2** for `mem` (`docs/tasks.md`, `docs/design.md`) — not finished.
+- **Benchmarks:** Dolenz et al. / refbias / Zenodo — context in `benchmarks/refbias/README.md`; runnable Nextflow smoke in `benchmarks/at_scale/` (`pixi run bench` / `bench-neo-only`).
 
 ## 8. CI
 
 - Workflow: `[.github/workflows/ci.yaml](.github/workflows/ci.yaml)` — Make + CMake matrices, smoke + golden on Make path, ASan build optional.
-- Badge: see `[README-BWA-NEO.md](README-BWA-NEO.md)`.
+- Badge: see `[docs/BWA-NEO.md](docs/BWA-NEO.md)`.
 
 ## 9. Sandboxes / automation caveats
 
@@ -90,4 +92,13 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 
 ---
 
-**Summary for agents:** Open `**~/Code/bwa-neo`**, follow `**tasks.md**`, respect `**requirements.md**` / `**design.md**`, run tests after code changes, and use `**docs/DEVELOPMENT.md**` for Git and `gh`.
+**Summary for agents:** Open `**~/Code/bwa-neo`**, follow `**docs/tasks.md**`, respect `**docs/requirements.md**` / `**docs/design.md**`, run tests after code changes, and use `**docs/DEVELOPMENT.md**` for Git and `gh`.
+
+## Cursor Cloud specific instructions
+
+- **Workspace root** in Cloud VMs is `/workspace` (not `~/Code/bwa-neo`).
+- **CMake C++ compiler caveat:** the default Clang on this VM cannot link `libstdc++`. Use `CC=gcc CXX=g++` when invoking CMake, e.g. `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja`.
+- **Build & test commands** are documented in sections 4 and 5 above. Both Make and CMake builds produce a `bwa` binary.
+- **No runtime services** are needed — this is a pure C project with no databases, containers, or background daemons.
+- **Full test suite** (Make path): `make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa && tests/cli_aux.sh ./bwa`
+- **Full test suite** (CMake path): `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja && cmake --build build && ctest --test-dir build --output-on-failure`

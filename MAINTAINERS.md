@@ -2,7 +2,7 @@
 
 bwa-neo is a community fork; replace this file with named maintainers and contact for releases and security.
 
-Scope (see `requirements.md`):
+Scope (see `docs/requirements.md`):
 
 - Preserve and improve **`aln` / `samse` / `sampe`**.
 - Integrate **bwa-mem2** for **`mem`** (phased).

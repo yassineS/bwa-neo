@@ -33,6 +33,9 @@ jobs:
       - name: Golden SAMPE regression
         run: chmod +x tests/golden_sampe.sh && tests/golden_sampe.sh ./bwa
 
+      - name: CLI aux (qualfa2fq, xa2multi, postalt, typehla*)
+        run: chmod +x tests/cli_aux.sh && tests/cli_aux.sh ./bwa
+
   build-cmake:
     runs-on: ubuntu-latest
     strategy:
@@ -69,8 +72,9 @@ jobs:
           cmake -S . -B build-asan -G Ninja -DBWA_NEO_ENABLE_ASAN=ON -DBUILD_TESTING=OFF
           cmake --build build-asan
 
+  # Native ARM64 runners (no QEMU); matches x86 coverage with gcc and clang.
   build-aarch64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
         compiler: [gcc, clang]
@@ -79,17 +83,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Compile with ${{ matrix.compiler }} (aarch64)
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: aarch64
-          distro: ubuntu20.04
-          githubToken: ${{ github.token }}
-          dockerRunArgs: |
-            --volume "${PWD}:/bwa"
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y make ${{ matrix.compiler }} zlib1g-dev
-          run: |
-            cd /bwa
-            make CC=${{ matrix.compiler }}
+      - name: Install dependencies
+        run: sudo apt-get update -q && sudo apt-get install -q -y zlib1g-dev
+
+      - name: Compile with Make (${{ matrix.compiler }})
+        run: make CC=${{ matrix.compiler }}
+
+      - name: Smoke test (bash)
+        run: chmod +x tests/smoke_align.sh && tests/smoke_align.sh ./bwa
+
+      - name: Golden SAM regression
+        run: chmod +x tests/golden_sam.sh && tests/golden_sam.sh ./bwa
+
+      - name: Golden SAMPE regression
+        run: chmod +x tests/golden_sampe.sh && tests/golden_sampe.sh ./bwa
+
+      - name: CLI aux (qualfa2fq, xa2multi, postalt, typehla*)
+        run: chmod +x tests/cli_aux.sh && tests/cli_aux.sh ./bwa

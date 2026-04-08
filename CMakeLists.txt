@@ -3,6 +3,8 @@ project(bwa-neo LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BWA_NEO_BUILD_BWA_MEM2 "Fetch and build bwa-mem2 into third_party/bwa-mem2" OFF)
@@ -51,6 +53,11 @@ set(BWA_NEO_EXE_SRCS
   src/core/kopen.c
   src/core/pemerge.c
   src/core/maxk.c
+  src/cli/bwa_xa2multi.c
+  src/cli/bwa_qualfa2fq.c
+  src/cli/bwa_postalt.c
+  src/cli/bwa_typehla_selctg.c
+  src/cli/bwa_typehla.c
   src/cli/main.c
 )
 
@@ -74,6 +81,8 @@ target_link_libraries(bwa PRIVATE bwa_core m z pthread ${BWA_NEO_EXTRA_LIBS})
 
 include(GNUInstallDirs)
 install(TARGETS bwa RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/man/bwa.1"
+        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
 
 include(CTest)
 if(BUILD_TESTING)

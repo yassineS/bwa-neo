@@ -23,3 +23,6 @@ set_tests_properties(golden_sampe PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DI
 
 add_test(NAME small_bam COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/small_bam.sh $<TARGET_FILE:bwa>)
 set_tests_properties(small_bam PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME cli_aux COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cli_aux.sh $<TARGET_FILE:bwa>)
+set_tests_properties(cli_aux PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

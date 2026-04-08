@@ -26,6 +26,7 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include "bwa_aux.h"
 #include "kstring.h"
 #include "utils.h"
 
@@ -52,7 +53,7 @@ int main_shm(int argc, char *argv[]);
 
 int main_pemerge(int argc, char *argv[]);
 int main_maxk(int argc, char *argv[]);
-	
+
 static int usage()
 {
 	fprintf(stderr, "\n");
@@ -75,6 +76,12 @@ static int usage()
 	fprintf(stderr, "         pac2bwtgen    alternative algorithm for generating BWT\n");
 	fprintf(stderr, "         bwtupdate     update .bwt to the new format\n");
 	fprintf(stderr, "         bwt2sa        generate SA from BWT and Occ\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Aux:     xa2multi      expand XA:Z supplementary hits (stdin SAM)\n");
+	fprintf(stderr, "         qualfa2fq     convert FASTA + numeric QUAL to FASTQ\n");
+	fprintf(stderr, "         postalt       ALT companion SAM stream (see stderr; liftover parity pending)\n");
+	fprintf(stderr, "         typehla-selctg select contigs for HLA typing (BED + SAM.gz)\n");
+	fprintf(stderr, "         typehla       HLA genotyping placeholder (reads SAM.gz; GT output not yet in C)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr,
 "Note: To use BWA, you need to first index the genome with `bwa index'.\n"
@@ -112,6 +119,11 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[1], "shm") == 0) ret = main_shm(argc-1, argv+1);
 	else if (strcmp(argv[1], "pemerge") == 0) ret = main_pemerge(argc-1, argv+1);
 	else if (strcmp(argv[1], "maxk") == 0) ret = main_maxk(argc-1, argv+1);
+	else if (strcmp(argv[1], "xa2multi") == 0) ret = bwa_xa2multi(argc-1, argv+1);
+	else if (strcmp(argv[1], "qualfa2fq") == 0) ret = bwa_qualfa2fq(argc-1, argv+1);
+	else if (strcmp(argv[1], "postalt") == 0) ret = bwa_postalt(argc-1, argv+1);
+	else if (strcmp(argv[1], "typehla-selctg") == 0) ret = bwa_typehla_selctg(argc-1, argv+1);
+	else if (strcmp(argv[1], "typehla") == 0) ret = bwa_typehla(argc-1, argv+1);
 	else {
 		fprintf(stderr, "[main] unrecognized command '%s'\n", argv[1]);
 		return 1;

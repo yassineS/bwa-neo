@@ -13,4 +13,4 @@ Then either:
 - `cd third_party/bwa-mem2 && make` to produce the `bwa-mem2` binary, or
 - Configure CMake with `-DBWA_NEO_BUILD_BWA_MEM2=ON` after sources exist (builds via `ExternalProject`).
 
-Long-term bwa-neo aims to unify `mem` into a single binary; see `design.md` and `tasks.md`.
+Long-term bwa-neo aims to unify `mem` into a single binary; see `docs/design.md` and `docs/tasks.md`.

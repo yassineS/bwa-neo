@@ -13,10 +13,6 @@
 #include "bwa.h"
 #include "ksw.h"
 
-#ifdef HAVE_PTHREAD
-#include <pthread.h>
-#endif
-
 #ifdef USE_MALLOC_WRAPPERS
 #  include "malloc_wrap.h"
 #endif
@@ -145,86 +141,28 @@ void bwa_cal_pac_pos_core(const bntseq_t *bns, const bwt_t *bwt, bwa_seq_t *seq,
 	if (seq->pos == (bwtint_t)-1) seq->type = BWA_TYPE_NO_MATCH;
 }
 
-#ifdef HAVE_PTHREAD
-typedef struct {
-	const bntseq_t *bns;
-	bwt_t *bwt;
-	bwa_seq_t *seqs;
-	int max_mm;
-	float fnr;
-	int start, end;
-} bwa_pac_pos_aux_t;
-
-static void *bwa_cal_pac_pos_worker(void *data)
-{
-	bwa_pac_pos_aux_t *a = (bwa_pac_pos_aux_t*)data;
-	int i, j, strand, n_multi;
-	for (i = a->start; i < a->end; ++i) {
-		bwa_seq_t *p = &a->seqs[i];
-		bwa_cal_pac_pos_core(a->bns, a->bwt, p, a->max_mm, a->fnr);
-		for (j = n_multi = 0; j < p->n_multi; ++j) {
-			bwt_multi1_t *q = p->multi + j;
-			q->pos = bwa_sa2pos(a->bns, a->bwt, q->pos, p->len + q->ref_shift, &strand);
-			q->strand = strand;
-			if (q->pos != p->pos && q->pos != (bwtint_t)-1)
-				p->multi[n_multi++] = *q;
-		}
-		p->n_multi = n_multi;
-	}
-	return NULL;
-}
-#endif
-
 void bwa_cal_pac_pos(const bntseq_t *bns, const char *prefix, int n_seqs, bwa_seq_t *seqs, int max_mm, float fnr, int n_threads)
 {
 	int i, j, strand, n_multi;
 	char str[1024];
 	bwt_t *bwt;
-	if (n_threads < 1) n_threads = 1;
-#ifndef HAVE_PTHREAD
-	n_threads = 1;
-#endif
+	(void)n_threads;
 	// load forward SA
 	strcpy(str, prefix); strcat(str, ".bwt");  bwt = bwt_restore_bwt(str);
 	strcpy(str, prefix); strcat(str, ".sa"); bwt_restore_sa(str, bwt);
-#ifdef HAVE_PTHREAD
-	if (n_threads > 1 && n_seqs > 1) {
-		int t, n_workers, chunk;
-		pthread_t *tid;
-		bwa_pac_pos_aux_t *aux;
-		n_workers = n_threads < n_seqs ? n_threads : n_seqs;
-		chunk = (n_seqs + n_workers - 1) / n_workers;
-		tid = (pthread_t*)calloc(n_workers, sizeof(pthread_t));
-		aux = (bwa_pac_pos_aux_t*)calloc(n_workers, sizeof(bwa_pac_pos_aux_t));
-		for (t = 0; t < n_workers; ++t) {
-			aux[t].bns = bns; aux[t].bwt = bwt; aux[t].seqs = seqs;
-			aux[t].max_mm = max_mm; aux[t].fnr = fnr;
-			aux[t].start = t * chunk;
-			aux[t].end = aux[t].start + chunk;
-			if (aux[t].end > n_seqs) aux[t].end = n_seqs;
-			if (aux[t].start < aux[t].end)
-				pthread_create(&tid[t], 0, bwa_cal_pac_pos_worker, &aux[t]);
+	/* Always single-threaded: bwt_sa() walks the FM-index with mutable
+	 * iteration state; concurrent use of one bwt_t is not safe. */
+	for (i = 0; i != n_seqs; ++i) {
+		bwa_seq_t *p = &seqs[i];
+		bwa_cal_pac_pos_core(bns, bwt, p, max_mm, fnr);
+		for (j = n_multi = 0; j < p->n_multi; ++j) {
+			bwt_multi1_t *q = p->multi + j;
+			q->pos = bwa_sa2pos(bns, bwt, q->pos, p->len + q->ref_shift, &strand);
+			q->strand = strand;
+			if (q->pos != p->pos && q->pos != (bwtint_t)-1)
+				p->multi[n_multi++] = *q;
 		}
-		for (t = 0; t < n_workers; ++t) {
-			if (aux[t].start < aux[t].end)
-				pthread_join(tid[t], 0);
-		}
-		free(tid); free(aux);
-	} else
-#endif
-	{
-		for (i = 0; i != n_seqs; ++i) {
-			bwa_seq_t *p = &seqs[i];
-			bwa_cal_pac_pos_core(bns, bwt, p, max_mm, fnr);
-			for (j = n_multi = 0; j < p->n_multi; ++j) {
-				bwt_multi1_t *q = p->multi + j;
-				q->pos = bwa_sa2pos(bns, bwt, q->pos, p->len + q->ref_shift, &strand);
-				q->strand = strand;
-				if (q->pos != p->pos && q->pos != (bwtint_t)-1)
-					p->multi[n_multi++] = *q;
-			}
-			p->n_multi = n_multi;
-		}
+		p->n_multi = n_multi;
 	}
 	bwt_destroy(bwt);
 }

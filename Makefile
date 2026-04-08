@@ -12,7 +12,8 @@ LIB_SRCS=	src/core/utils.c src/core/kthread.c src/core/kstring.c src/core/ksw.c 
 EXE_SRCS=	src/backtrack/bwashm.c src/backtrack/bwase.c src/backtrack/bwaseqio.c src/backtrack/bwtgap.c \
 			src/backtrack/bwtaln.c src/backtrack/bwape.c src/backtrack/bwtsw2_core.c src/backtrack/bwtsw2_main.c \
 			src/backtrack/bwtsw2_aux.c src/backtrack/bwtsw2_chain.c src/backtrack/bwtsw2_pair.c src/index/bwt_lite.c \
-			src/mem/fastmap.c src/core/bamlite.c src/core/kopen.c src/core/pemerge.c src/core/maxk.c
+			src/mem/fastmap.c src/core/bamlite.c src/core/kopen.c src/core/pemerge.c src/core/maxk.c \
+			src/cli/bwa_xa2multi.c src/cli/bwa_qualfa2fq.c src/cli/bwa_postalt.c src/cli/bwa_typehla_selctg.c src/cli/bwa_typehla.c
 LOBJS=		$(patsubst %.c,%.o,$(LIB_SRCS))
 AOBJS=		$(patsubst %.c,%.o,$(EXE_SRCS))
 MAIN_OBJ=	src/cli/main.o
