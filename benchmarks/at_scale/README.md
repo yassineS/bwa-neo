@@ -86,12 +86,16 @@ Profiles: compose **`standard`** with **`publication`** (baseline + higher threa
 - `nextflow/results_publication_local/perf/summary_metrics.tsv`
 - `nextflow/results_publication_local/perf/speedup_metrics.tsv`
 - `nextflow/results_publication_local/publication_manifest.json`
-- `nextflow/results_publication_local/plot/*.pdf|*.svg|*.png` (generated inside the Nextflow pipeline)
+- `nextflow/results_publication_local/plot/*.pdf|*.svg|*.png` (generated inside the Nextflow pipeline; modern and ancient panels are rendered separately)
 
 Local publication run includes:
 - Modern DNA (`1,000,000` reads): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`
 - Ancient DNA (`1,000,000` reads): ALN pipelines for both SE and PE
 - Thread scaling for ancient ALN: `1, 2, 4, 6, 8` with speedup table in `perf/speedup_metrics.tsv`
+
+Memory notes:
+- Peak RSS is parsed from platform-specific `/usr/bin/time` output (`-v` on GNU, `-l` on BSD/macOS).
+- If peak RSS is unavailable from the host timing tool, metrics are emitted as `-1` (unknown), never silently `0`.
 
 ## Tiers
 
