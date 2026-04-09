@@ -59,14 +59,14 @@ Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenod
 - **Figures**: (1) runtime bar chart with error bars by pipeline; (2) speedup ratio vs baseline; (3) optional accuracy/refbias metrics if Zenodo pipeline extended.
 - **Style**: Vector output (PDF/SVG), named colorblind-safe palette, font sizes for two-column print (~8–9 pt).
 
-Scripts should live under `benchmarks/at_scale/plot/` and read only generated TSV/CSV.
+Publication plots and tables are emitted under each run `--outdir` (e.g. `nextflow/results_publication_local/plot/` and `.../tables/`).
 
 ## Running (Pixi + Nextflow)
 
 All benchmark **drivers** for this tree are **Nextflow**; dependencies and tasks are in `**pixi.toml`** (no Makefile under `benchmarks/`).
 
 ```bash
-cd benchmarks/at_scale
+cd benchmarks
 pixi install
 pixi run bench-neo-only   # neo only; threaded aln + samse -t + sampe + samse self-test + manifest
 pixi run bench            # + conda `bwa` baseline, SE/PE first-11 parity, `publication` profile (threads 4)
