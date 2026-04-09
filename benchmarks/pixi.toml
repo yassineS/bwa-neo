@@ -32,9 +32,9 @@ cmd = "mkdir -p \"$PIXI_PROJECT_ROOT/.simulators\" && curl -fsSL \"https://raw.g
 # PIXI_PROJECT_ROOT is the directory that contains this pixi.toml (benchmarks/).
 # bwa-neo repo root is one level up — never use ../.. here (that jumps above the repo).
 [tasks.build-bwa-neo]
-# Pin Ninja from the active Pixi env so a stale CMakeCache (e.g. after moving pixi.toml
-# out of benchmarks/at_scale/) does not keep pointing at a dead .pixi path.
-cmd = "REPO_ROOT=\"$(cd \"$PIXI_PROJECT_ROOT/..\" && pwd)\" && NINJA=\"$(command -v ninja)\" && test -n \"$NINJA\" && cmake -S \"$REPO_ROOT\" -B \"$REPO_ROOT/build-benchmark\" -G Ninja -DCMAKE_MAKE_PROGRAM=\"$NINJA\" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF && cmake --build \"$REPO_ROOT/build-benchmark\""
+# Pin toolchain from the active Pixi env and drop stale cache entries so an old
+# benchmarks/at_scale/.pixi/ layout cannot linger in build-benchmark/CMakeCache.txt.
+cmd = "REPO_ROOT=\"$(cd \"$PIXI_PROJECT_ROOT/..\" && pwd)\" && NINJA=\"$(command -v ninja)\" && CC_BIN=\"$(command -v \"${CC:-cc}\")\" && CXX_BIN=\"$(command -v \"${CXX:-c++}\")\" && test -n \"$NINJA\" && test -n \"$CC_BIN\" && test -n \"$CXX_BIN\" && cmake -S \"$REPO_ROOT\" -B \"$REPO_ROOT/build-benchmark\" -U CMAKE_C_COMPILER -U CMAKE_CXX_COMPILER -U CMAKE_MAKE_PROGRAM -G Ninja -DCMAKE_MAKE_PROGRAM=\"$NINJA\" -DCMAKE_C_COMPILER=\"$CC_BIN\" -DCMAKE_CXX_COMPILER=\"$CXX_BIN\" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF && cmake --build \"$REPO_ROOT/build-benchmark\""
 
 [tasks.bench]
 depends-on = ["build-bwa-neo", "prepare-simulators"]

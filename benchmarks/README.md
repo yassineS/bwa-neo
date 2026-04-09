@@ -75,7 +75,7 @@ pixi run bench-publication-local  # local publication-scale profile with 1M-read
 
 `pixi.toml` lives in `benchmarks/`; `PIXI_PROJECT_ROOT` is that directory, so the bwa-neo source tree is **`$PIXI_PROJECT_ROOT/..`** (one level up), not `../..`. Tasks use `REPO_ROOT="$(cd "$PIXI_PROJECT_ROOT/.." && pwd)"` so `pixi run` works from `benchmarks/` or a subdirectory such as `benchmarks/nextflow/`.
 
-If CMake fails looking for Ninja under a non-existent `benchmarks/at_scale/.pixi/...` path, your `build-benchmark/` tree was configured with an old Pixi layout. Either remove it and rebuild (`rm -rf build-benchmark` from the repo root) or pull the latest `pixi.toml`, which passes `-DCMAKE_MAKE_PROGRAM="$(command -v ninja)"` on configure.
+If CMake fails with tools under a non-existent `benchmarks/at_scale/.pixi/...` path (Ninja, `clang`, etc.), your `build-benchmark/CMakeCache.txt` predates the move to `benchmarks/.pixi/`. Pull the latest `pixi.toml` (it re-points Ninja and compilers from the active env and clears those cache entries), or remove the build tree once: `rm -rf build-benchmark` from the repo root.
 
 Override binaries (advanced):
 
