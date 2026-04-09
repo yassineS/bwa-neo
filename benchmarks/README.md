@@ -102,7 +102,7 @@ Profiles: compose `**standard**` with `**publication**` (baseline + higher threa
 
 Local publication run includes:
 
-- Modern DNA (`1,000,000` paired-end reads, InSilicoSeq): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`, fixed at 4 threads.
+- Modern DNA (`1,000,000` paired-end reads, InSilicoSeq): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`, fixed at 4 threads. **bwa-mem2** is indexed on a **copy** of the reference so its index files do not overwrite the classic `bwa index` used by neo and baseline.
 - Modern parity report: normalized SAM comparison in `parity/modern_mem_parity.tsv`.
 - Ancient DNA (`1,000,000` paired-end reads, PyGargammel-damaged): explicit read collapse/merge step is run first, then merged reads run with `aln+samse`; unmerged paired reads run with `aln+sampe`.
 - Preferred aDNA simulation path is in-pipeline via `pygargammel` and merged-read generation is performed in-pipeline (AdapterRemoval). You can still override inputs with external FASTQs via `--ancient_merged_fq`, `--ancient_r1_fq`, `--ancient_r2_fq`.
