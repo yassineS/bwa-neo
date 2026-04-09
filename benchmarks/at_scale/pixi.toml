@@ -10,26 +10,36 @@ nextflow = ">=24.10.0"
 openjdk = "17.*"
 bwa = ">=0.7.18"
 bwa-mem2 = ">=2.2.1"
+art = "*"
+insilicoseq = "*"
+adapterremoval = "*"
+seqtk = "*"
 cmake = ">=3.20"
 ninja = ">=1.11"
 zlib = "*"
 c-compiler = "*"
 cxx-compiler = "*"
 python = ">=3.10"
+numpy = ">=1.26"
+biopython = ">=1.83"
 pandas = ">=2.2"
 matplotlib = ">=3.8"
+tabulate = ">=0.9"
+
+[tasks.prepare-simulators]
+cmd = "mkdir -p \"$PIXI_PROJECT_ROOT/.simulators\" && curl -fsSL \"https://raw.githubusercontent.com/computations/pygargammel/main/pygargammel\" -o \"$PIXI_PROJECT_ROOT/.simulators/pygargammel\" && chmod +x \"$PIXI_PROJECT_ROOT/.simulators/pygargammel\""
 
 [tasks.build-bwa-neo]
 cmd = "cmake -S \"$PIXI_PROJECT_ROOT/../..\" -B \"$PIXI_PROJECT_ROOT/../../build-benchmark\" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF && cmake --build \"$PIXI_PROJECT_ROOT/../../build-benchmark\""
 
 [tasks.bench]
-depends-on = ["build-bwa-neo"]
-cmd = "export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && export BWA_MEM2=\"$(command -v bwa-mem2)\" && test -x \"$BWA_NEO\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,publication --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --bwa_mem2 \"$BWA_MEM2\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_publication\""
+depends-on = ["build-bwa-neo", "prepare-simulators"]
+cmd = "export PATH=\"$PIXI_PROJECT_ROOT/.simulators:$PATH\" && export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && export BWA_MEM2=\"$(command -v bwa-mem2)\" && test -x \"$BWA_NEO\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,publication --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --bwa_mem2 \"$BWA_MEM2\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_publication\""
 
 [tasks.bench-neo-only]
-depends-on = ["build-bwa-neo"]
-cmd = "export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && export BWA_MEM2=\"$(command -v bwa-mem2)\" && test -x \"$BWA_NEO\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,neo_only --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --bwa_mem2 \"$BWA_MEM2\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_neo_only\""
+depends-on = ["build-bwa-neo", "prepare-simulators"]
+cmd = "export PATH=\"$PIXI_PROJECT_ROOT/.simulators:$PATH\" && export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && export BWA_MEM2=\"$(command -v bwa-mem2)\" && test -x \"$BWA_NEO\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,neo_only --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --bwa_mem2 \"$BWA_MEM2\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_neo_only\""
 
 [tasks.bench-publication-local]
-depends-on = ["build-bwa-neo"]
-cmd = "export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && export BWA_MEM2=\"$(command -v bwa-mem2)\" && test -x \"$BWA_NEO\" && rm -rf \"$PIXI_PROJECT_ROOT/nextflow/results_publication_local\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,publication_local_scale --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --bwa_mem2 \"$BWA_MEM2\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_publication_local\""
+depends-on = ["build-bwa-neo", "prepare-simulators"]
+cmd = "export PATH=\"$PIXI_PROJECT_ROOT/.simulators:$PATH\" && export NXF_HOME=\"$PIXI_PROJECT_ROOT/.nextflow_home\" && mkdir -p \"$NXF_HOME\" && export BWA_NEO=\"$PIXI_PROJECT_ROOT/../../build-benchmark/bwa\" && export BWA_BASELINE=\"$(command -v bwa)\" && export BWA_MEM2=\"$(command -v bwa-mem2)\" && test -x \"$BWA_NEO\" && rm -rf \"$PIXI_PROJECT_ROOT/nextflow/results_publication_local\" && nextflow run \"$PIXI_PROJECT_ROOT/nextflow/main.nf\" -profile standard,publication_local_scale --bwa_neo \"$BWA_NEO\" --bwa_baseline \"$BWA_BASELINE\" --bwa_mem2 \"$BWA_MEM2\" --outdir \"$PIXI_PROJECT_ROOT/nextflow/results_publication_local\""
