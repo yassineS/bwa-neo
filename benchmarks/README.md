@@ -73,6 +73,8 @@ pixi run bench            # + conda `bwa` baseline, SE/PE first-11 parity, `publ
 pixi run bench-publication-local  # local publication-scale profile with 1M-read modern (InSilicoSeq) + aDNA (PyGargammel) runs
 ```
 
+`pixi.toml` lives in `benchmarks/`; `PIXI_PROJECT_ROOT` is that directory, so the bwa-neo source tree is **`$PIXI_PROJECT_ROOT/..`** (one level up), not `../..`. Tasks use `REPO_ROOT="$(cd "$PIXI_PROJECT_ROOT/.." && pwd)"` so `pixi run` works from `benchmarks/` or a subdirectory such as `benchmarks/nextflow/`.
+
 Override binaries (advanced):
 
 ```bash
