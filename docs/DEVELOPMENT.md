@@ -123,6 +123,10 @@ From **`~/Code/bwa-neo`** in your system terminal:
 
 If `git init` fails with **Operation not permitted** on `.git/hooks`, your environment is blocking hook installation; the repo metadata may still work—try `git -c core.hooksPath=/dev/null init -b main` or upgrade your Git client.
 
+## GitHub Wiki
+
+Contributor-facing wiki pages are published separately from `main`. Staging copies live under [`docs/wiki-wip/`](../wiki-wip/README.md). After enabling Wikis in repository settings, clone `https://github.com/yassineS/bwa-neo.wiki.git`, copy the staged Markdown into that clone, commit, and push. The public index is `https://github.com/yassineS/bwa-neo/wiki`.
+
 ## What not to do
 
 - Do not commit `build/`, `*.o`, the `bwa` binary, or `third_party/bwa-mem2/` (see `.gitignore`).

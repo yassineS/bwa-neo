@@ -1,6 +1,6 @@
 # Agent / contributor handoff — bwa-neo
 
-Use this file when **onboarding an AI agent or a new human contributor**. It complements `**docs/requirements.md`**, `**docs/design.md**`, and `**docs/tasks.md**`.
+Use this file when **onboarding an AI agent or a new human contributor**. It complements `**docs/requirements.md`**, `**docs/design.md`**, and `**docs/tasks.md**`.
 
 ## 1. Workspace root (required)
 
@@ -11,13 +11,13 @@ Use this file when **onboarding an AI agent or a new human contributor**. It com
 ## 2. Read these first (order)
 
 
-| File                                                 | Purpose                                          |
-| ---------------------------------------------------- | ------------------------------------------------ |
-| `[docs/requirements.md](docs/requirements.md)`       | User stories, acceptance criteria                |
-| `[docs/design.md](docs/design.md)`                   | Architecture, components, compatibility        |
-| `[docs/tasks.md](docs/tasks.md)`                     | Living checklist — what is done vs next            |
-| `[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)`         | Git branches, `**gh`**, commits, troubleshooting |
-| `[docs/UPSTREAM_TRIAGE.md](docs/UPSTREAM_TRIAGE.md)` | How to merge fixes from lh3/bwa                  |
+| File                                                                   | Purpose                                            |
+| ---------------------------------------------------------------------- | -------------------------------------------------- |
+| `[docs/requirements.md](docs/requirements.md)`                         | User stories, acceptance criteria                  |
+| `[docs/design.md](docs/design.md)`                                     | Architecture, components, compatibility            |
+| `[docs/tasks.md](docs/tasks.md)`                                       | Living checklist — what is done vs next            |
+| `[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)`                           | Git branches, `**gh`**, commits, troubleshooting   |
+| `[docs/UPSTREAM_TRIAGE.md](docs/UPSTREAM_TRIAGE.md)`                   | How to merge fixes from lh3/bwa                    |
 | `[.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)` | PR checklist; required reading before opening a PR |
 
 
@@ -53,7 +53,7 @@ If any of these checks fail, do not open the PR. Explain to your human partner w
 
 - **Upstream source:** originally derived from [lh3/bwa](https://github.com/lh3/bwa); this fork is **[yassineS/bwa-neo](https://github.com/yassineS/bwa-neo)** on GitHub.
 - **Default branch:** `main`.
-- **GitHub CLI:** prefer `**gh`** (authenticated). Run `**gh auth setup-git**` once per machine so `git push` over HTTPS works with the same credentials as `gh`.
+- **GitHub CLI:** prefer `**gh`** (authenticated). Run `**gh auth setup-git`** once per machine so `git push` over HTTPS works with the same credentials as `gh`.
 - **Feature work:** use short-lived branches `feat/<topic>`, merge to `main` (see `docs/DEVELOPMENT.md`).
 
 ## 5. Build
@@ -113,7 +113,7 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 
 ## 10. Sandboxes / automation caveats
 
-Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**scripts/bootstrap-git.sh`** on a real machine if needed. If `**gh pr create**` fails with API errors from a restricted runner, push locally and open the PR in the browser.
+Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**scripts/bootstrap-git.sh`** on a real machine if needed. If `**gh pr create`** fails with API errors from a restricted runner, push locally and open the PR in the browser.
 
 ## 11. License / attribution
 
@@ -121,7 +121,7 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 
 ---
 
-**Summary for agents:** Open `**~/Code/bwa-neo`**, follow `**docs/tasks.md**`, respect `**docs/requirements.md**` / `**docs/design.md**`, run tests after code changes, commit and document any code changes (section 3.1), open a PR when the diff is more than two lines (section 3.2), read `**/.github/PULL_REQUEST_TEMPLATE.md**` before `**gh pr create**` (section 3.3), and use `**docs/DEVELOPMENT.md**` for Git and `gh`.
+**Summary for agents:** Open `**~/Code/bwa-neo`**, follow `**docs/tasks.md`**, respect `**docs/requirements.md**` / `**docs/design.md**`, run tests after code changes, commit and document any code changes (section 3.1), open a PR when the diff is more than two lines (section 3.2), read `**/.github/PULL_REQUEST_TEMPLATE.md**` before `**gh pr create**` (section 3.3), and use `**docs/DEVELOPMENT.md**` for Git and `gh`.
 
 ## Cursor Cloud specific instructions
 
@@ -131,3 +131,4 @@ Some environments **cannot** create `.git/hooks` or write `.git/config`. Use `**
 - **No runtime services** are needed — this is a pure C project with no databases, containers, or background daemons.
 - **Full test suite** (Make path): `make -j && tests/smoke_align.sh ./bwa && tests/golden_sam.sh ./bwa && tests/golden_sampe.sh ./bwa && tests/cli_aux.sh ./bwa`
 - **Full test suite** (CMake path): `CC=gcc CXX=g++ cmake -S . -B build -DBUILD_TESTING=ON -G Ninja && cmake --build build && ctest --test-dir build --output-on-failure`
+

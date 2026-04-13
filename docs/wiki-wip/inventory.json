@@ -1,0 +1,132 @@
+[
+  {
+    "path": "README.md",
+    "description": "Upstream-oriented BWA user narrative; fork banner and pointer to fork docs.",
+    "audience": ["user", "contributor"]
+  },
+  {
+    "path": "docs/BWA-NEO.md",
+    "description": "Fork landing page: CI badge, quick start, documentation spine, fork change summary.",
+    "audience": ["contributor", "agent"]
+  },
+  {
+    "path": "docs/requirements.md",
+    "description": "User stories and acceptance criteria.",
+    "audience": ["contributor", "agent"]
+  },
+  {
+    "path": "docs/design.md",
+    "description": "Architecture, components, compatibility, thread safety.",
+    "audience": ["contributor", "agent"]
+  },
+  {
+    "path": "docs/tasks.md",
+    "description": "Living implementation checklist and milestones.",
+    "audience": ["contributor", "agent", "maintainer"]
+  },
+  {
+    "path": "docs/DEVELOPMENT.md",
+    "description": "Git branches, commits, GitHub CLI (gh), troubleshooting.",
+    "audience": ["contributor", "maintainer"]
+  },
+  {
+    "path": "docs/UPSTREAM_TRIAGE.md",
+    "description": "How to merge fixes from lh3/bwa upstream.",
+    "audience": ["contributor", "maintainer"]
+  },
+  {
+    "path": "docs/NEWS.md",
+    "description": "Fork-oriented news and notable changes.",
+    "audience": ["contributor", "user"]
+  },
+  {
+    "path": "docs/README-alt.md",
+    "description": "Alternate README material.",
+    "audience": ["contributor"]
+  },
+  {
+    "path": "docs/CODE_OF_CONDUCT.md",
+    "description": "Community code of conduct.",
+    "audience": ["contributor", "user"]
+  },
+  {
+    "path": "AGENTS.md",
+    "description": "AI agent and contributor handoff: workspace root, build, test, layout, PR guardrails.",
+    "audience": ["agent", "contributor"]
+  },
+  {
+    "path": "CONTRIBUTING.md",
+    "description": "Short contributing entry with links to deeper docs.",
+    "audience": ["contributor", "agent"]
+  },
+  {
+    "path": ".github/PULL_REQUEST_TEMPLATE.md",
+    "description": "Pull request checklist expected before opening a PR.",
+    "audience": ["contributor", "agent"]
+  },
+  {
+    "path": "SECURITY.md",
+    "description": "Security vulnerability reporting.",
+    "audience": ["contributor", "maintainer"]
+  },
+  {
+    "path": "MAINTAINERS.md",
+    "description": "Maintainer notes and expectations.",
+    "audience": ["maintainer"]
+  },
+  {
+    "path": "CHANGELOG.md",
+    "description": "Release-style change log.",
+    "audience": ["user", "contributor"]
+  },
+  {
+    "path": "COPYING",
+    "description": "GPLv3 licence text (plain file, not Markdown).",
+    "audience": ["user", "contributor", "legal"]
+  },
+  {
+    "path": "man/bwa.1",
+    "description": "Troff manual page for the bwa command-line interface.",
+    "audience": ["user"]
+  },
+  {
+    "path": "tests/README.md",
+    "description": "Smoke tests, golden SAM, CTest layout and usage.",
+    "audience": ["contributor", "agent"]
+  },
+  {
+    "path": "benchmarks/README.md",
+    "description": "At-scale benchmarks: Nextflow, Pixi, parity and publication outputs.",
+    "audience": ["researcher", "contributor"]
+  },
+  {
+    "path": "benchmarks/refbias/README.md",
+    "description": "Reference-bias context, Zenodo, Dolenz et al. pointers.",
+    "audience": ["researcher", "contributor"]
+  },
+  {
+    "path": "benchmarks/publication_draft.md",
+    "description": "Publication draft notes for benchmark work.",
+    "audience": ["researcher"]
+  },
+  {
+    "path": "bwakit/README.md",
+    "description": "Bwakit subtree notes.",
+    "audience": ["user", "contributor"]
+  },
+  {
+    "path": "src/mem2/README.md",
+    "description": "Placeholder for future in-tree bwa-mem2 merge.",
+    "audience": ["contributor"]
+  },
+  {
+    "path": "third_party/README.md",
+    "description": "Optional fetched dependencies (e.g. bwa-mem2).",
+    "audience": ["contributor"]
+  },
+  {
+    "path": ".cursor/skills/bwa-neo-cloud-runbook.md",
+    "description": "Cursor Cloud–specific workspace and build notes.",
+    "audience": ["agent"]
+  }
+]
