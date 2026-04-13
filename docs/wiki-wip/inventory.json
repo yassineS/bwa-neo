@@ -133,5 +133,10 @@
     "path": ".cursor/skills/bwa-neo-cloud-runbook.md",
     "description": "Cursor Cloud–specific workspace and build notes.",
     "audience": ["agent"]
+  },
+  {
+    "path": "scripts/publish-wiki-from-staging.sh",
+    "description": "Publishes docs/wiki-wip into the GitHub wiki clone (gh clone; git commit in wiki only).",
+    "audience": ["maintainer"]
   }
 ]

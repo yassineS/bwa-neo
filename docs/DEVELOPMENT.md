@@ -127,16 +127,23 @@ If `git init` fails with **Operation not permitted** on `.git/hooks`, your envir
 
 Contributor-facing wiki pages are published separately from `main`. Staging copies live under [`docs/wiki-wip/`](../wiki-wip/README.md). After enabling Wikis in repository settings:
 
-1. Clone the wiki with the **GitHub CLI** (install from [cli.github.com](https://cli.github.com/); run `gh auth login` if needed):
+1. Install the [GitHub CLI](https://cli.github.com/) and run `gh auth login` and **`gh auth setup-git`** once per machine.
+
+2. If the wiki git remote does not exist yet, open the wiki from **`gh`** and create a short **Home** page in the browser, then clone:
 
    ```bash
+   gh browse --wiki yassineS/bwa-neo
    gh repo clone https://github.com/yassineS/bwa-neo.wiki.git
    cd bwa-neo.wiki
    ```
 
-2. Copy the staged Markdown from `docs/wiki-wip/` into this clone, then `git add`, `git commit`, and `git push`. Run `gh auth setup-git` once per machine so `git push` to GitHub uses the same credentials as `gh`.
+3. From the **bwa-neo** repo root, you can sync staging in one step (clone via **`gh`**, then **Git** only inside the wiki directory for commit and push):
 
-The public index is `https://github.com/yassineS/bwa-neo/wiki`.
+   ```bash
+   ./scripts/publish-wiki-from-staging.sh
+   ```
+
+The public index is `https://github.com/yassineS/bwa-neo/wiki`. Status and first-time notes: [`docs/wiki-wip/WIKI_PUBLISH_STATUS.md`](../wiki-wip/WIKI_PUBLISH_STATUS.md).
 
 ## What not to do
 

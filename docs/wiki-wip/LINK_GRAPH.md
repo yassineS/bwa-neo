@@ -2,6 +2,8 @@
 
 Sources: [README.md](../../README.md) (first fork-relevant lines and doc links), [docs/BWA-NEO.md](../BWA-NEO.md).
 
+**Update:** `benchmarks/at_scale/` path mismatches called out below were corrected in `benchmarks/refbias/README.md`, `docs/tasks.md`, `AGENTS.md`, `docs/requirements.md`, and related docs; use `rg at_scale` for any remaining historical mentions (e.g. CMake cache migration notes).
+
 ## Links from README.md (fork-relevant)
 
 | Link target | Exists in tree | Notes |

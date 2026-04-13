@@ -17,7 +17,7 @@ The repository root is one level above `benchmarks/`; Pixi tasks resolve `REPO_R
 
 ## Reference bias and Zenodo context
 
-Background, citations, and Zenodo record pointers: [benchmarks/refbias/README.md](https://github.com/yassineS/bwa-neo/blob/main/benchmarks/refbias/README.md) — note some older prose in that file still mentions a separate `benchmarks/at_scale/` tree; the **live** workflow files live under [`benchmarks/nextflow/`](https://github.com/yassineS/bwa-neo/tree/main/benchmarks/nextflow) and [`benchmarks/pixi.toml`](https://github.com/yassineS/bwa-neo/blob/main/benchmarks/pixi.toml).
+Background, citations, and Zenodo record pointers: [benchmarks/refbias/README.md](https://github.com/yassineS/bwa-neo/blob/main/benchmarks/refbias/README.md). Workflow sources: [`benchmarks/nextflow/`](https://github.com/yassineS/bwa-neo/tree/main/benchmarks/nextflow) and [`benchmarks/pixi.toml`](https://github.com/yassineS/bwa-neo/blob/main/benchmarks/pixi.toml).
 
 ## Publication draft
 

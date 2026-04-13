@@ -37,8 +37,8 @@
 
 ## Refbias benchmarks
 
-- `benchmarks/refbias/README.md` — pointers to Dolenz et al. / Zenodo; smoke runs via `**benchmarks/at_scale**` (Pixi + Nextflow, no Makefile under `benchmarks/`)
-- `benchmarks/at_scale/` — Nextflow tiny-fixture pipeline: threaded `aln` + neo `samse -t`, `sampe`, optional conda-`bwa` first-11 parity, samse thread self-test, `publication_manifest.json`
+- `benchmarks/refbias/README.md` — pointers to Dolenz et al. / Zenodo; smoke runs under **`benchmarks/`** (Pixi + Nextflow, no Makefile under `benchmarks/`)
+- `benchmarks/` — Nextflow tiny-fixture pipeline: threaded `aln` + neo `samse -t`, `sampe`, optional conda-`bwa` first-11 parity, samse thread self-test, `publication_manifest.json`
 - Extend Nextflow (Zenodo fetch, hyperfine, plots, simulation tracks)
 - Download Zenodo 14234666 assets via scripted checksum
 - Nightly full benchmark job (optional)

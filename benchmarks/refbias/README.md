@@ -6,7 +6,7 @@ This directory holds **design notes** and pointers to workflows that reproduce a
 - Dolenz et al., *Bioinformatics* (2024), [btae436](https://doi.org/10.1093/bioinformatics/btae436)
 - Zenodo record [14234666](https://zenodo.org/records/14234666)
 
-Executable smoke / publication-style checks live in **`benchmarks/at_scale/`** (Nextflow + Pixi only — no Makefile here).
+Executable smoke / publication-style checks live under **`benchmarks/`** (Nextflow + Pixi; no Makefile under `benchmarks/`).
 
 ## Goals
 
@@ -15,23 +15,23 @@ Executable smoke / publication-style checks live in **`benchmarks/at_scale/`** (
 
 ## Smoke / parity (CI-friendly)
 
-From **`benchmarks/at_scale/`** (builds bwa-neo via CMake, runs Nextflow on tiny fixtures):
+From **`benchmarks/`** (builds bwa-neo via CMake, runs Nextflow on tiny fixtures):
 
 ```bash
-cd benchmarks/at_scale
+cd benchmarks
 pixi install
 pixi run bench-neo-only    # neo only, fast
 # or full parity vs conda bwa + manifest:
 pixi run bench
 ```
 
-See [`benchmarks/at_scale/README.md`](../at_scale/README.md) for outputs and profiles.
+See [`benchmarks/README.md`](../README.md) for outputs and profiles.
 
 ## Full reproduction
 
 1. Download Zenodo **14234666** artifacts (or follow `refbias_scripts` to regenerate).
 2. Pin **reference genome** versions and **bwa-neo** git SHA in your lab notes.
-3. Extend the **Nextflow** workflow in `benchmarks/at_scale/nextflow/` for Zenodo-scale data; cite Dolenz et al. (2024) and note any parameter deviations.
+3. Extend the **Nextflow** workflow in `benchmarks/nextflow/` for Zenodo-scale data; cite Dolenz et al. (2024) and note any parameter deviations.
 
 ## Metrics (suggested)
 

@@ -92,9 +92,10 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 ├── src/{core,index,backtrack,mem,cli}/ ← BWA C sources by subsystem
 ├── include/bwa/           ← shared/public headers
 ├── tests/                 ← smoke, golden, CTest, fixtures
-├── benchmarks/refbias/    ← refbias / Zenodo workflow skeleton
+├── benchmarks/            ← Pixi + Nextflow drivers (see benchmarks/README.md)
+├── benchmarks/refbias/    ← refbias / Zenodo notes
 ├── docs/                  ← requirements, design, tasks, DEVELOPMENT, UPSTREAM_TRIAGE, …
-├── scripts/               ← bootstrap-git, fetch-bwa-mem2
+├── scripts/               ← bootstrap-git, fetch-bwa-mem2, publish-wiki-from-staging.sh
 ├── cmake/BwaMem2.cmake    ← optional ExternalProject for mem2
 ├── third_party/         ← bwa-mem2 after fetch (often gitignored; see third_party/README.md)
 └── src/mem2/README.md     ← placeholder for future in-tree mem2 merge
@@ -105,7 +106,7 @@ cmake -S . -B build -DBUILD_TESTING=ON && cmake --build build && ctest --test-di
 - **Keep** `aln` / `samse` / `sampe` strong (ancient DNA / short reads).
 - **Parallelism:** `bwa aln -t` (upstream); `**bwa samse -t`** (bwa-neo) for pac_pos batching.
 - **Future:** merge **bwa-mem2** for `mem` (`docs/tasks.md`, `docs/design.md`) — not finished.
-- **Benchmarks:** Dolenz et al. / refbias / Zenodo — context in `benchmarks/refbias/README.md`; runnable Nextflow smoke in `benchmarks/at_scale/` (`pixi run bench` / `bench-neo-only`).
+- **Benchmarks:** Dolenz et al. / refbias / Zenodo — context in `benchmarks/refbias/README.md`; runnable Nextflow smoke under **`benchmarks/`** (`pixi run bench` / `bench-neo-only`).
 
 ## 9. CI
 

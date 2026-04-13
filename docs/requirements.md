@@ -67,7 +67,7 @@ A maintained fork of BWA that keeps the `**aln` / `samse` / `sampe`** pipeline r
 
 | ID   | Story                                                                                                                                              | Acceptance criteria                                                                                                                            |
 | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| R7.1 | As a researcher, I can reproduce a **smoke** pipeline aligned with Dolenz et al. (Bioinformatics 2024, btae436), refbias_scripts, Zenodo 14234666. | `benchmarks/refbias/README.md` + `benchmarks/at_scale` Pixi/Nextflow (`pixi run bench` / `bench-neo-only`); full Zenodo runs optional/nightly. |
+| R7.1 | As a researcher, I can reproduce a **smoke** pipeline aligned with Dolenz et al. (Bioinformatics 2024, btae436), refbias_scripts, Zenodo 14234666. | `benchmarks/refbias/README.md` + top-level **`benchmarks/`** Pixi/Nextflow (`pixi run bench` / `bench-neo-only`); full Zenodo runs optional/nightly. |
 
 
 ## Out of scope (for now)

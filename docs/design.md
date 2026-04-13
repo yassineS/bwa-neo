@@ -63,8 +63,8 @@ flowchart TB
 
 - `bwa_cal_pac_pos` multi-threaded path: shared `bwt_t` is read-only; each thread owns disjoint `bwa_seq_t` indices.
 
-## License
+## Licence
 
-- Upstream BWA: see `COPYING` (MIT-style).
+- This tree: see **`COPYING`** (GPLv3). File-level notices from upstream BWA and third parties must stay intact when merging code.
 - bwa-mem2: MIT — see `third_party/bwa-mem2/LICENSE` after fetch.
 
