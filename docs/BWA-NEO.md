@@ -24,6 +24,7 @@ cmake -S . -B build && cmake --build build && ctest --test-dir build
 
 **Documentation spine**
 
+- [`USAGE.md`](USAGE.md) — running `bwa`: subcommands, typical pipelines, fork-specific `samse -t`
 - [`requirements.md`](requirements.md) — user stories and acceptance criteria
 - [`design.md`](design.md) — architecture and components
 - [`tasks.md`](tasks.md) — checklist
@@ -33,6 +34,6 @@ cmake -S . -B build && cmake --build build && ctest --test-dir build
 - CMake + GoogleTest scaffold; smoke alignment test.
 - `bwa samse -t N` — parallel coordinate conversion (pthread).
 - Optional bwa-mem2: `scripts/fetch-bwa-mem2.sh` (prefer full `git clone --recursive` of bwa-mem2 for a complete build).
-- `benchmarks/refbias/` — reference-bias / Zenodo context; **`benchmarks/at_scale/`** — Pixi + Nextflow smoke and parity (no Makefile under `benchmarks/`).
+- `benchmarks/refbias/` — reference-bias / Zenodo context; top-level **`benchmarks/`** — Pixi + Nextflow smoke and parity (no Makefile under `benchmarks/`).
 
 The original upstream README content remains in `README.md`.

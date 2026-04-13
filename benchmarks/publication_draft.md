@@ -4,7 +4,7 @@
 
 - Date (UTC manifest): 2026-04-08T06:57:01.350271Z
 - Driver: Nextflow (`nextflow/main.nf`) with `standard,publication` profile
-- Command: `cd benchmarks/at_scale && pixi run bench`
+- Command: `cd benchmarks && pixi run bench`
 - Binaries:
   - bwa-neo: `build-benchmark/bwa`
   - baseline bwa (conda): `.pixi/envs/default/bin/bwa`
@@ -59,6 +59,6 @@ On deterministic tiny-fixture smoke benchmarks, bwa-neo matched baseline bwa on 
 
 1. Extend `nextflow/main.nf` to emit per-run performance TSV (`elapsed_s`, `max_rss_kb`, read/bases throughput) for neo and baseline.
 2. Run benchmark tiers on larger datasets (e.g., Zenodo/refbias or representative chromosome-scale subsets) with repeated trials.
-3. Generate publication plots (runtime, speedup, memory) from raw TSVs and freeze plotting scripts under `benchmarks/at_scale/plot/`.
+3. Generate publication plots (runtime, speedup, memory) from raw TSVs; figures land under each run `--outdir` (e.g. `nextflow/results_publication_local/plot/`).
 4. Record binary provenance robustly (version strings, git SHA, compiler flags) because current `*_versions.txt` files are empty in this run.
 5. Re-run with clean output directory and archive manifest + raw results as supplemental material.

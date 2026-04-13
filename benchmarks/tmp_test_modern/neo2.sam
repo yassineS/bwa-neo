@@ -1,0 +1,5 @@
+@HD	VN:1.5	SO:unsorted	GO:query
+@SQ	SN:chr1	LN:40
+@PG	ID:bwa	PN:bwa	VN:0.7.19-r1273	CL:/Users/yassinesouilmi/Code/bwa-neo/build-benchmark/bwa mem -t 4 /Users/yassinesouilmi/Code/bwa-neo/benchmarks/tmp_test_modern/modern_ref.fa /Users/yassinesouilmi/Code/bwa-neo/benchmarks/tmp_test_modern/modern_r1.fq /Users/yassinesouilmi/Code/bwa-neo/benchmarks/tmp_test_modern/modern_r2.fq
+pair	77	*	0	0	*	*	0	0	ACGTACGTACGTACGT	IIIIIIIIIIIIIIII	MQ:i:0	AS:i:0	XS:i:0
+pair	141	*	0	0	*	*	0	0	ACGTACGTACGTACGT	IIIIIIIIIIIIIIII	MQ:i:0	AS:i:0	XS:i:0

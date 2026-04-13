@@ -59,19 +59,23 @@ Nextflow `params` should expose: `ref_url`, `reads_url` (or local paths), `zenod
 - **Figures**: (1) runtime bar chart with error bars by pipeline; (2) speedup ratio vs baseline; (3) optional accuracy/refbias metrics if Zenodo pipeline extended.
 - **Style**: Vector output (PDF/SVG), named colorblind-safe palette, font sizes for two-column print (~8–9 pt).
 
-Scripts should live under `benchmarks/at_scale/plot/` and read only generated TSV/CSV.
+Publication plots and tables are emitted under each run `--outdir` (e.g. `nextflow/results_publication_local/plot/` and `.../tables/`).
 
 ## Running (Pixi + Nextflow)
 
 All benchmark **drivers** for this tree are **Nextflow**; dependencies and tasks are in `**pixi.toml`** (no Makefile under `benchmarks/`).
 
 ```bash
-cd benchmarks/at_scale
+cd benchmarks
 pixi install
 pixi run bench-neo-only   # neo only; threaded aln + samse -t + sampe + samse self-test + manifest
 pixi run bench            # + conda `bwa` baseline, SE/PE first-11 parity, `publication` profile (threads 4)
 pixi run bench-publication-local  # local publication-scale profile with 1M-read modern (InSilicoSeq) + aDNA (PyGargammel) runs
 ```
+
+`pixi.toml` lives in `benchmarks/`; `PIXI_PROJECT_ROOT` is that directory, so the bwa-neo source tree is **`$PIXI_PROJECT_ROOT/..`** (one level up), not `../..`. Tasks use `REPO_ROOT="$(cd "$PIXI_PROJECT_ROOT/.." && pwd)"` so `pixi run` works from `benchmarks/` or a subdirectory such as `benchmarks/nextflow/`.
+
+If CMake fails with tools under a non-existent `benchmarks/at_scale/.pixi/...` path (Ninja, `clang`, etc.), your `build-benchmark/CMakeCache.txt` predates the move to `benchmarks/.pixi/`. The `build-bwa-neo` Pixi task runs `scripts/pixi_build_bwa_neo.sh`, which removes a cache file that still references `benchmarks/at_scale/` and reconfigures with the current env’s Ninja and compilers. If problems persist, delete the build tree once: `rm -rf build-benchmark` from the repo root.
 
 Override binaries (advanced):
 
@@ -98,7 +102,7 @@ Profiles: compose `**standard**` with `**publication**` (baseline + higher threa
 
 Local publication run includes:
 
-- Modern DNA (`1,000,000` paired-end reads, InSilicoSeq): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`, fixed at 4 threads.
+- Modern DNA (`1,000,000` paired-end reads, InSilicoSeq): `bwa-neo mem` vs baseline `bwa mem` vs `bwa-mem2 mem`, fixed at 4 threads. **bwa-mem2** is indexed on a **copy** of the reference so its index files do not overwrite the classic `bwa index` used by neo and baseline.
 - Modern parity report: normalized SAM comparison in `parity/modern_mem_parity.tsv`.
 - Ancient DNA (`1,000,000` paired-end reads, PyGargammel-damaged): explicit read collapse/merge step is run first, then merged reads run with `aln+samse`; unmerged paired reads run with `aln+sampe`.
 - Preferred aDNA simulation path is in-pipeline via `pygargammel` and merged-read generation is performed in-pipeline (AdapterRemoval). You can still override inputs with external FASTQs via `--ancient_merged_fq`, `--ancient_r1_fq`, `--ancient_r2_fq`.
