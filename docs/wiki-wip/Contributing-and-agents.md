@@ -47,6 +47,7 @@ Use this section when **onboarding an AI agent or a new human contributor**. It 
 
 | File | Purpose |
 |------|---------|
+| [docs/USAGE.md](https://github.com/yassineS/bwa-neo/blob/main/docs/USAGE.md) | Running `bwa`: subcommands, pipelines, `samse -t` |
 | [docs/requirements.md](https://github.com/yassineS/bwa-neo/blob/main/docs/requirements.md) | User stories, acceptance criteria |
 | [docs/design.md](https://github.com/yassineS/bwa-neo/blob/main/docs/design.md) | Architecture, components, compatibility |
 | [docs/tasks.md](https://github.com/yassineS/bwa-neo/blob/main/docs/tasks.md) | Living checklist — what is done versus next |

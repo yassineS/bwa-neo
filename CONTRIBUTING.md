@@ -1,6 +1,6 @@
 # Contributing to bwa-neo
 
-Read **`docs/requirements.md`**, **`docs/design.md`**, and **`docs/tasks.md`** before large changes. For **AI agents** or workspace setup, read **[`AGENTS.md`](AGENTS.md)** first.
+Read **`docs/requirements.md`**, **`docs/design.md`**, and **`docs/tasks.md`** before large changes. To **run the `bwa` binary** (subcommands, pipelines), see **`docs/USAGE.md`**. For **AI agents** or workspace setup, read **[`AGENTS.md`](AGENTS.md)** first.
 
 **Repository location:** clone and work only under **`~/Code/bwa-neo`**—open that path as the workspace root; do not use the home directory as the project root for bwa-neo.
 

@@ -10,6 +10,11 @@
     "audience": ["contributor", "agent"]
   },
   {
+    "path": "docs/USAGE.md",
+    "description": "User guide: running bwa subcommands, typical workflows, fork-specific samse options.",
+    "audience": ["user", "contributor"]
+  },
+  {
     "path": "docs/requirements.md",
     "description": "User stories and acceptance criteria.",
     "audience": ["contributor", "agent"]

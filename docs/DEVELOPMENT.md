@@ -125,7 +125,18 @@ If `git init` fails with **Operation not permitted** on `.git/hooks`, your envir
 
 ## GitHub Wiki
 
-Contributor-facing wiki pages are published separately from `main`. Staging copies live under [`docs/wiki-wip/`](../wiki-wip/README.md). After enabling Wikis in repository settings, clone `https://github.com/yassineS/bwa-neo.wiki.git`, copy the staged Markdown into that clone, commit, and push. The public index is `https://github.com/yassineS/bwa-neo/wiki`.
+Contributor-facing wiki pages are published separately from `main`. Staging copies live under [`docs/wiki-wip/`](../wiki-wip/README.md). After enabling Wikis in repository settings:
+
+1. Clone the wiki with the **GitHub CLI** (install from [cli.github.com](https://cli.github.com/); run `gh auth login` if needed):
+
+   ```bash
+   gh repo clone https://github.com/yassineS/bwa-neo.wiki.git
+   cd bwa-neo.wiki
+   ```
+
+2. Copy the staged Markdown from `docs/wiki-wip/` into this clone, then `git add`, `git commit`, and `git push`. Run `gh auth setup-git` once per machine so `git push` to GitHub uses the same credentials as `gh`.
+
+The public index is `https://github.com/yassineS/bwa-neo/wiki`.
 
 ## What not to do
 

@@ -12,7 +12,7 @@ bwa mem ref.fa read1.fq read2.fq > aln-pe.sam
 .PP
 bwa aln ref.fa short_read.fq > aln_sa.sai
 .PP
-bwa samse ref.fa aln_sa.sai short_read.fq > aln-se.sam
+bwa samse [-t nThreads] ref.fa aln_sa.sai short_read.fq > aln-se.sam
 .PP
 bwa sampe ref.fa aln_sa1.sai aln_sa2.sai read1.fq read2.fq > aln-pe.sam
 .PP
@@ -498,7 +498,8 @@ is specified, only use the second read in a read pair in mapping.
 
 .TP
 .B samse
-bwa samse [-n maxOcc] <in.db.fasta> <in.sai> <in.fq> > <out.sam>
+bwa samse [-n maxOcc] [-t nThreads] [-f out.sam] <in.db.fasta> <in.sai>
+<in.fq> > <out.sam>
 
 Generate alignments in the SAM format given single-end reads. Repetitive
 hits will be randomly chosen.
@@ -510,6 +511,12 @@ hits will be randomly chosen.
 Maximum number of alignments to output in the XA tag for reads paired
 properly. If a read has more than INT hits, the XA tag will not be
 written. [3]
+.TP
+.BI -t \ INT
+Number of threads for coordinate conversion (bwa-neo extension). [1]
+.TP
+.BI -f \ FILE
+Write SAM to FILE instead of stdout. [stdout]
 .TP
 .BI -r \ STR
 Specify the read group in a format like `@RG\\tID:foo\\tSM:bar'. [null]

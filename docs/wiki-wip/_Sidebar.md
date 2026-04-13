@@ -1,5 +1,7 @@
 **[Home](Home)**
 
+**[Usage and features](Usage-and-features)**
+
 **[Contributing and agents](Contributing-and-agents)**
 
 **[Build and test](Build-and-test)**

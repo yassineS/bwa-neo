@@ -13,6 +13,7 @@ Use this file when **onboarding an AI agent or a new human contributor**. It com
 
 | File                                                                   | Purpose                                            |
 | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| `[docs/USAGE.md](docs/USAGE.md)`                                       | Running `bwa`: subcommands, pipelines, `samse -t`  |
 | `[docs/requirements.md](docs/requirements.md)`                         | User stories, acceptance criteria                  |
 | `[docs/design.md](docs/design.md)`                                     | Architecture, components, compatibility            |
 | `[docs/tasks.md](docs/tasks.md)`                                       | Living checklist — what is done vs next            |

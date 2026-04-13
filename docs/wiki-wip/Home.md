@@ -15,6 +15,7 @@ Welcome to the **bwa-neo** wiki. This is a **Burrows–Wheeler aligner (BWA)** f
 
 | Page | Purpose |
 |------|---------|
+| [Usage and features](Usage-and-features) | Running `bwa`: pipelines, subcommands, fork-specific `samse -t` |
 | [Contributing and agents](Contributing-and-agents) | How humans and coding agents should work in this repository |
 | [Build and test](Build-and-test) | Compile and verify the tree |
 | [Architecture and scope](Architecture-and-scope) | Pointers to requirements, design, and the task checklist |
