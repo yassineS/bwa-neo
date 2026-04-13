@@ -1,0 +1,15 @@
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 2 sequences (32 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 0, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] skip orientation FR as there are not enough pairs
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 2 reads in 0.000 CPU sec, 0.000 real sec
+[main] Version: 0.7.19-r1273
+[main] CMD: /Users/yassinesouilmi/Code/bwa-neo/build-benchmark/bwa mem -t 4 modern_ref.fa modern_r1.fq modern_r2.fq
+[main] Real time: 0.001 sec; CPU: 0.002 sec
+real 0.00
+user 0.00
+sys 0.00
+time: sysctl kern.clockrate: Operation not permitted
